@@ -12,478 +12,142 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #0D0D0D;
-    --surface: #181818;
-    --surface2: #222222;
-    --border: #2A2A2A;
-    --text: #F0EDE6;
-    --muted: #666;
-    --gold: #C9A84C;
-    --gold-light: #E8C97A;
-    --green: #4CAF7D;
-    --red: #E05A5A;
-    --blue: #5A9BE0;
+    --bg: #0D0D0D; --surface: #181818; --surface2: #222;
+    --border: #2A2A2A; --text: #F0EDE6; --muted: #666;
+    --gold: #C9A84C; --gold-light: #E8C97A;
+    --green: #2ECC71; --red: #C0392B; --blue: #5A9BE0;
   }
-
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    overflow-x: hidden;
-  }
-
-  /* ── SCREENS ── */
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; overflow-x: hidden; }
   .screen { display: none; min-height: 100vh; flex-direction: column; }
   .screen.active { display: flex; }
 
-  /* ── LOGIN SCREEN ── */
-  #screen-login {
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    position: relative;
-    overflow: hidden;
-  }
-
-  #screen-login::before {
-    content: '40';
-    position: absolute;
-    font-family: 'Playfair Display', serif;
-    font-size: 40vw;
-    color: #ffffff06;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    user-select: none;
-  }
-
-  .login-box {
-    text-align: center;
-    padding: 40px 32px;
-    position: relative;
-    z-index: 1;
-    animation: fadeUp 0.6s ease;
-  }
-
-  .login-box .eyebrow {
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 16px;
-  }
-
-  .login-box h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 52px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1;
-    margin-bottom: 8px;
-  }
-
-  .login-box .subtitle {
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    letter-spacing: 0.05em;
-  }
-
-  .countdown-login {
-    font-size: 13px;
-    color: var(--gold);
-    margin-bottom: 48px;
-    font-weight: 500;
-  }
-
-  .btn-google {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    padding: 14px 28px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: 100%;
-    max-width: 280px;
-    margin: 0 auto;
-    letter-spacing: 0.05em;
-  }
-
-  .btn-google:hover { background: var(--surface2); border-color: var(--gold); color: var(--gold); }
-
+  /* LOGIN */
+  #screen-login { align-items: center; justify-content: center; background: var(--bg); position: relative; overflow: hidden; }
+  #screen-login::before { content: '40'; position: absolute; font-family: 'Playfair Display', serif; font-size: 40vw; color: #ffffff05; top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+  .login-box { text-align: center; padding: 40px 32px; position: relative; z-index: 1; animation: fadeUp 0.6s ease; }
+  .login-box .eyebrow { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+  .login-box h1 { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 8px; }
+  .login-box .subtitle { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .countdown-login { font-size: 13px; color: var(--gold); margin-bottom: 48px; font-weight: 500; }
+  .btn-google { display: flex; align-items: center; justify-content: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 14px 28px; border-radius: 8px; cursor: pointer; transition: all 0.2s; width: 100%; max-width: 280px; margin: 0 auto; }
+  .btn-google:hover { border-color: var(--gold); color: var(--gold); }
   .btn-google svg { width: 18px; height: 18px; flex-shrink: 0; }
 
-  /* ── NAV ── */
-  nav {
-    display: flex;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  nav button {
-    flex: 1;
-    padding: 14px 4px;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    border-bottom: 2px solid transparent;
-  }
-
-  nav button .nav-icon { font-size: 18px; }
+  /* NAV */
+  nav { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  nav button { flex: 1; padding: 12px 4px; background: none; border: none; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 3px; border-bottom: 2px solid transparent; }
+  nav button .nav-icon { font-size: 16px; }
   nav button.active { color: var(--gold); border-bottom-color: var(--gold); }
 
-  /* ── CONTENT ── */
-  .content {
-    flex: 1;
-    padding: 24px 20px 100px;
-    max-width: 480px;
-    width: 100%;
-    margin: 0 auto;
-  }
+  /* CONTENT */
+  .content { flex: 1; padding: 24px 18px 100px; max-width: 480px; width: 100%; margin: 0 auto; }
+  .page-header { margin-bottom: 24px; animation: fadeUp 0.4s ease; }
+  .page-header .eyebrow { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .page-header h2 { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; }
 
-  .page-header {
-    margin-bottom: 28px;
-    animation: fadeUp 0.4s ease;
-  }
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 14px; animation: fadeUp 0.4s ease; }
+  .card-title { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 
-  .page-header .eyebrow {
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 6px;
-  }
+  /* FORM */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .field input, .field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 15px; padding: 11px 13px; border-radius: 8px; outline: none; transition: border-color 0.2s, background 0.3s; -webkit-appearance: none; }
+  .field input:focus, .field select:focus { border-color: var(--gold); }
+  .field .hint { font-size: 10px; color: var(--muted); margin-top: 5px; transition: color 0.3s; }
 
-  .page-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--text);
-  }
+  /* COLOUR STATES */
+  .state-great { border-color: #2ECC71 !important; background: #0A2A14 !important; }
+  .state-good  { border-color: #7DCE82 !important; background: #0F2010 !important; }
+  .state-warn  { border-color: #F39C12 !important; background: #2A1A00 !important; }
+  .state-over  { border-color: #E74C3C !important; background: #2A0A0A !important; }
+  .state-bad   { border-color: #C0392B !important; background: #3A0000 !important; }
 
-  /* ── CARDS ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-    animation: fadeUp 0.4s ease;
-  }
-
-  .card-title {
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .card-title .icon { font-size: 14px; }
-
-  /* ── FORM FIELDS ── */
-  .field { margin-bottom: 16px; }
-
-  .field label {
-    display: block;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-
-  .field input, .field select, .field textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 15px;
-    padding: 12px 14px;
-    border-radius: 8px;
-    outline: none;
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
-  }
-
-  .field input:focus, .field select:focus, .field textarea:focus {
-    border-color: var(--gold);
-  }
-
-  .field .hint {
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 6px;
-  }
-
-  /* time input row */
-  .time-row { display: flex; gap: 10px; align-items: center; }
-  .time-row input { text-align: center; font-size: 20px; font-weight: 500; }
+  /* TIME ROW */
+  .time-row { display: flex; gap: 8px; align-items: center; }
+  .time-row input { text-align: center; font-size: 22px; font-weight: 500; flex: 1; }
   .time-sep { color: var(--muted); font-size: 20px; }
 
-  /* star rating */
+  /* STARS */
   .stars { display: flex; gap: 6px; margin-top: 4px; }
   .star { font-size: 24px; cursor: pointer; color: var(--border); transition: color 0.15s; }
   .star.active { color: var(--gold); }
 
-  /* ── BUTTONS ── */
-  .btn-primary {
-    width: 100%;
-    padding: 16px;
-    background: var(--gold);
-    color: #0D0D0D;
-    border: none;
-    border-radius: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
+  /* BUTTONS */
+  .btn-primary { width: 100%; padding: 15px; background: var(--gold); color: #0D0D0D; border: none; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
   .btn-primary:hover { background: var(--gold-light); }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .btn-secondary {
-    width: 100%;
-    padding: 14px;
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 10px;
-  }
-
+  .btn-secondary { width: 100%; padding: 12px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
-  /* ── TOAST ── */
-  #toast {
-    position: fixed;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-size: 12px;
-    padding: 12px 20px;
-    border-radius: 8px;
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 999;
-    white-space: nowrap;
-    pointer-events: none;
-  }
-
+  /* TOAST */
+  #toast { position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 12px; padding: 11px 20px; border-radius: 8px; opacity: 0; transition: all 0.3s; z-index: 999; white-space: nowrap; pointer-events: none; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   #toast.success { border-color: var(--green); color: var(--green); }
   #toast.error { border-color: var(--red); color: var(--red); }
 
-  /* ── DASHBOARD ── */
-  .countdown-card {
-    background: linear-gradient(135deg, #1A1500, #0D0D0D);
-    border: 1px solid var(--gold);
-    border-radius: 12px;
-    padding: 24px 20px;
-    text-align: center;
-    margin-bottom: 16px;
-    animation: fadeUp 0.4s ease;
-  }
+  /* COUNTDOWN */
+  .countdown-card { background: linear-gradient(135deg, #1A1500, #0D0D0D); border: 1px solid var(--gold); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 14px; animation: fadeUp 0.4s ease; }
+  .countdown-card .days-num { font-family: 'Playfair Display', serif; font-size: 60px; color: var(--gold); line-height: 1; }
+  .countdown-card .days-label { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .countdown-card .birthday-line { font-size: 11px; color: var(--gold); margin-top: 10px; opacity: 0.7; }
 
-  .countdown-card .days-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 64px;
-    color: var(--gold);
-    line-height: 1;
-  }
+  /* GAUGES */
+  .gauges-row { display: flex; gap: 12px; margin-bottom: 14px; }
+  .gauge-wrap { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 10px 10px; text-align: center; animation: fadeUp 0.4s ease; position: relative; }
+  .gauge-label { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .gauge-value { font-size: 13px; font-weight: 500; margin-top: 2px; }
+  .gauge-sub { font-size: 9px; color: var(--muted); margin-top: 2px; }
 
-  .countdown-card .days-label {
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 4px;
-  }
+  /* GOAL CARDS */
+  .goal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; animation: fadeUp 0.4s ease; }
+  .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .goal-name { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .goal-status { font-size: 9px; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
+  .goal-status.on-track { background: #0A2A14; color: #2ECC71; }
+  .goal-status.behind { background: #2A0A0A; color: #E74C3C; }
+  .goal-numbers { display: flex; justify-content: space-between; margin-bottom: 10px; }
+  .goal-numbers .actual { font-size: 22px; }
+  .goal-numbers .target { font-size: 11px; color: var(--muted); align-self: flex-end; padding-bottom: 3px; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  .goal-sub { font-size: 10px; color: var(--muted); margin-top: 7px; }
 
-  .countdown-card .birthday-line {
-    font-size: 11px;
-    color: var(--gold);
-    margin-top: 12px;
-    opacity: 0.7;
-  }
+  /* CHART */
+  .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+  .chart-wrap canvas { max-height: 180px; }
 
-  /* goal progress */
-  .goal-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-    margin-bottom: 12px;
-    animation: fadeUp 0.4s ease;
-  }
+  /* GOALS GRID */
+  .goals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .goal-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 12px; }
+  .goal-tile .tile-icon { font-size: 20px; margin-bottom: 5px; }
+  .goal-tile .tile-num { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--gold); line-height: 1; }
+  .goal-tile .tile-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+  .goal-tile .tile-progress { font-size: 10px; margin-top: 6px; }
+  .coming-soon { background: var(--surface); border: 1px dashed var(--border); border-radius: 12px; padding: 28px 20px; text-align: center; margin-bottom: 14px; }
+  .coming-soon .cs-icon { font-size: 28px; margin-bottom: 10px; }
+  .coming-soon h3 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 400; margin-bottom: 6px; }
+  .coming-soon p { font-size: 11px; color: var(--muted); line-height: 1.6; }
 
-  .goal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-  }
+  /* HISTORY */
+  .hist-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .hist-date { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+  .hist-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .badge { font-size: 10px; padding: 3px 8px; border-radius: 4px; }
+  .hist-extras { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hist-extra { font-size: 11px; }
 
-  .goal-name {
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text);
-  }
-
-  .goal-status {
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 500;
-  }
-
-  .goal-status.on-track { background: #1A3A2A; color: var(--green); }
-  .goal-status.behind { background: #3A1A1A; color: var(--red); }
-  .goal-status.ahead { background: #1A2A3A; color: var(--blue); }
-
-  .goal-numbers {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
-  .goal-numbers .actual { font-size: 22px; color: var(--text); font-weight: 500; }
-  .goal-numbers .target { font-size: 12px; color: var(--muted); align-self: flex-end; padding-bottom: 4px; }
-
-  .progress-bar {
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.6s ease;
-  }
-
-  .progress-fill.green { background: var(--green); }
-  .progress-fill.red { background: var(--red); }
-  .progress-fill.blue { background: var(--blue); }
-  .progress-fill.gold { background: var(--gold); }
-
-  /* chart wrapper */
-  .chart-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-    animation: fadeUp 0.4s ease;
-  }
-
-  .chart-wrap canvas { max-height: 200px; }
-
-  /* ── LOADING ── */
-  .loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    color: var(--muted);
-    font-size: 12px;
-    letter-spacing: 0.1em;
-  }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ── SIGN OUT ── */
-  .signout-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-top: 1px solid var(--border);
-    margin-top: 20px;
-  }
-
+  /* SIGNOUT */
+  .signout-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); margin-top: 16px; }
   .signout-row .user-email { font-size: 10px; color: var(--muted); }
-  .btn-signout {
-    font-size: 10px;
-    color: var(--muted);
-    background: none;
-    border: 1px solid var(--border);
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.05em;
-  }
-
+  .btn-signout { font-size: 10px; color: var(--muted); background: none; border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-family: 'JetBrains Mono', monospace; }
   .btn-signout:hover { color: var(--red); border-color: var(--red); }
 
-  /* section label */
-  .section-label {
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin: 24px 0 12px;
-  }
-
-  /* toggle */
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-  }
-
-  .toggle-label { font-size: 12px; color: var(--text); }
-
+  .section-label { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); margin: 20px 0 10px; }
+  .loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--muted); font-size: 11px; }
   input[type="date"] { color-scheme: dark; }
-
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -494,14 +158,9 @@
     <div class="eyebrow">Your journey to</div>
     <h1>40by40</h1>
     <div class="subtitle">40 goals before you turn 40</div>
-    <div class="countdown-login" id="login-countdown">Loading countdown...</div>
+    <div class="countdown-login" id="login-countdown">Loading...</div>
     <button class="btn-google" onclick="signIn()">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-      </svg>
+      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
       Sign in with Google
     </button>
   </div>
@@ -509,695 +168,502 @@
 
 <!-- MAIN APP -->
 <div id="screen-app" class="screen">
-
-  <!-- NAV -->
   <nav>
-    <button class="active" onclick="showTab('log')" id="nav-log">
-      <span class="nav-icon">✏️</span>Log
-    </button>
-    <button onclick="showTab('dashboard')" id="nav-dashboard">
-      <span class="nav-icon">📊</span>Dashboard
-    </button>
-    <button onclick="showTab('history')" id="nav-history">
-      <span class="nav-icon">📅</span>History
-    </button>
+    <button class="active" onclick="showTab('log')" id="nav-log"><span class="nav-icon">✏️</span>Log</button>
+    <button onclick="showTab('dashboard')" id="nav-dashboard"><span class="nav-icon">📊</span>Dashboard</button>
+    <button onclick="showTab('goals')" id="nav-goals"><span class="nav-icon">🎯</span>Goals</button>
+    <button onclick="showTab('history')" id="nav-history"><span class="nav-icon">📅</span>History</button>
   </nav>
 
-  <!-- LOG TAB -->
+  <!-- LOG -->
   <div id="tab-log" class="content">
-    <div class="page-header">
-      <div class="eyebrow">Daily Entry</div>
-      <h2>Log Today</h2>
-    </div>
-
-    <!-- Date -->
+    <div class="page-header"><div class="eyebrow">Daily Entry</div><h2>Log Today</h2></div>
     <div class="card">
-      <div class="card-title"><span class="icon">📅</span> Date</div>
-      <div class="field">
-        <input type="date" id="log-date" />
-      </div>
+      <div class="card-title">📅 Date</div>
+      <div class="field"><input type="date" id="log-date" /></div>
     </div>
-
-    <!-- Mobile Usage -->
     <div class="card">
-      <div class="card-title"><span class="icon">📱</span> Mobile Usage</div>
+      <div class="card-title">📱 Mobile Usage</div>
       <div class="field">
         <label>Total Screen Time</label>
         <div class="time-row">
-          <input type="number" id="mobile-h" placeholder="0" min="0" max="23" style="flex:1" />
+          <input type="number" id="mobile-h" placeholder="0" min="0" max="23" />
           <span class="time-sep">h</span>
-          <input type="number" id="mobile-m" placeholder="00" min="0" max="59" style="flex:1" />
+          <input type="number" id="mobile-m" placeholder="00" min="0" max="59" />
           <span class="time-sep">m</span>
         </div>
         <div class="hint" id="mobile-hint">Target: under 4h 00m per day</div>
       </div>
     </div>
-
-    <!-- Social Media -->
     <div class="card">
-      <div class="card-title"><span class="icon">💬</span> Social Media</div>
+      <div class="card-title">💬 Social Media</div>
       <div class="field">
         <label>FB + X + Reddit + Instagram</label>
         <div class="time-row">
-          <input type="number" id="social-h" placeholder="0" min="0" max="23" style="flex:1" />
+          <input type="number" id="social-h" placeholder="0" min="0" max="23" />
           <span class="time-sep">h</span>
-          <input type="number" id="social-m" placeholder="00" min="0" max="59" style="flex:1" />
+          <input type="number" id="social-m" placeholder="00" min="0" max="59" />
           <span class="time-sep">m</span>
         </div>
         <div class="hint" id="social-hint">Target: under 1h 00m per day</div>
       </div>
     </div>
-
-    <!-- Walking -->
     <div class="card">
-      <div class="card-title"><span class="icon">🚶</span> Walking</div>
+      <div class="card-title">🚶 Walking</div>
       <div class="field">
         <label>Distance today (km)</label>
         <input type="number" id="walk-km" placeholder="0.0" min="0" step="0.1" />
         <div class="hint">Goal: 440 km total by May 9, 2027</div>
       </div>
     </div>
-
-    <!-- Book -->
     <div class="card">
-      <div class="card-title"><span class="icon">📚</span> Book Finished</div>
-      <div class="field">
-        <label>Title (leave blank if none today)</label>
-        <input type="text" id="book-title" placeholder="e.g. Atomic Habits" />
-      </div>
+      <div class="card-title">📚 Book Finished</div>
+      <div class="field"><label>Title (leave blank if none today)</label><input type="text" id="book-title" placeholder="e.g. Atomic Habits" /></div>
       <div id="book-meta-section" style="display:none">
-        <div class="field">
-          <label>Author</label>
-          <input type="text" id="book-author" placeholder="Auto-filled or enter manually" />
-        </div>
+        <div class="field"><label>Author</label><input type="text" id="book-author" placeholder="Auto-filled or enter manually" /></div>
         <div class="field">
           <label>Genre</label>
-          <select id="book-genre">
-            <option value="">Select...</option>
-            <option value="Non-Fiction">Non-Fiction</option>
-            <option value="Fiction">Fiction</option>
-            <option value="Biography">Biography</option>
-            <option value="Self-Help">Self-Help</option>
-            <option value="History">History</option>
-            <option value="Science">Science</option>
-            <option value="Other">Other</option>
-          </select>
+          <select id="book-genre"><option value="">Select...</option><option>Non-Fiction</option><option>Fiction</option><option>Biography</option><option>Self-Help</option><option>History</option><option>Science</option><option>Other</option></select>
         </div>
         <div class="field">
           <label>Your Rating</label>
           <div class="stars" id="star-rating">
-            <span class="star" data-val="1">★</span>
-            <span class="star" data-val="2">★</span>
-            <span class="star" data-val="3">★</span>
-            <span class="star" data-val="4">★</span>
-            <span class="star" data-val="5">★</span>
+            <span class="star" data-val="1">★</span><span class="star" data-val="2">★</span><span class="star" data-val="3">★</span><span class="star" data-val="4">★</span><span class="star" data-val="5">★</span>
           </div>
         </div>
+        <button class="btn-secondary" onclick="lookupBook()">🔍 Lookup Book Info</button>
       </div>
-      <button class="btn-secondary" id="book-lookup-btn" onclick="lookupBook()" style="display:none; margin-top:8px">
-        🔍 Lookup Book Info
-      </button>
     </div>
-
-    <!-- Article -->
     <div class="card">
-      <div class="card-title"><span class="icon">✍️</span> Article Published</div>
-      <div class="field">
-        <label>Title (leave blank if none today)</label>
-        <input type="text" id="article-title" placeholder="e.g. My thoughts on AI" />
-      </div>
+      <div class="card-title">✍️ Article Published</div>
+      <div class="field"><label>Title (leave blank if none today)</label><input type="text" id="article-title" placeholder="e.g. My thoughts on AI" /></div>
       <div id="article-platform-section" style="display:none">
-        <div class="field">
-          <label>Platform</label>
-          <select id="article-platform">
-            <option value="Medium">Medium</option>
-            <option value="LinkedIn">LinkedIn</option>
-            <option value="Personal Blog">Personal Blog</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
+        <div class="field"><label>Platform</label><select id="article-platform"><option>Medium</option><option>LinkedIn</option><option>Personal Blog</option><option>Other</option></select></div>
       </div>
     </div>
-
     <button class="btn-primary" id="submit-btn" onclick="submitLog()">Save to Google Sheets ✓</button>
-
     <div class="signout-row">
       <span class="user-email" id="user-email-display"></span>
       <button class="btn-signout" onclick="signOut()">Sign Out</button>
     </div>
   </div>
 
-  <!-- DASHBOARD TAB -->
+  <!-- DASHBOARD -->
   <div id="tab-dashboard" class="content" style="display:none">
-    <div class="page-header">
-      <div class="eyebrow">Progress</div>
-      <h2>Dashboard</h2>
-    </div>
-
+    <div class="page-header"><div class="eyebrow">Progress</div><h2>Dashboard</h2></div>
     <div class="countdown-card">
       <div class="days-num" id="dash-days">—</div>
       <div class="days-label">Days Until 40</div>
       <div class="birthday-line">🎂 May 9, 2027</div>
     </div>
+    <div id="dashboard-content"><div class="loading">Loading your data...</div></div>
+  </div>
 
-    <div id="dashboard-content">
-      <div class="loading">Loading your data...</div>
+  <!-- GOALS -->
+  <div id="tab-goals" class="content" style="display:none">
+    <div class="page-header"><div class="eyebrow">40 Goals</div><h2>Before 40</h2></div>
+    <div class="section-label">Active — Tracking since Jan 1, 2026</div>
+    <div id="goals-active-content"><div class="loading">Loading...</div></div>
+    <div class="coming-soon">
+      <div class="cs-icon">🗓️</div>
+      <h3>35 More Goals Coming</h3>
+      <p>You have a full list ready.<br/>We'll add them to the app later this week — each with its own tracking screen.</p>
     </div>
   </div>
 
-  <!-- HISTORY TAB -->
+  <!-- HISTORY -->
   <div id="tab-history" class="content" style="display:none">
-    <div class="page-header">
-      <div class="eyebrow">Past Entries</div>
-      <h2>History</h2>
-    </div>
-    <div id="history-content">
-      <div class="loading">Loading history...</div>
-    </div>
+    <div class="page-header"><div class="eyebrow">Past Entries</div><h2>History</h2></div>
+    <div id="history-content"><div class="loading">Loading history...</div></div>
   </div>
-
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-// ── CONFIG ──
 const CLIENT_ID = '967721083876-icftgcc4oqlme803ap66v0f8ecn91nmg.apps.googleusercontent.com';
 const SHEET_ID  = '17l2HqXbW6tQISvFV8ywV6oOGKwMwLetFCMu9AiRNxB4';
 const SCOPES    = 'https://www.googleapis.com/auth/spreadsheets';
 const BIRTHDAY  = new Date('2027-05-09');
+let tokenClient, accessToken = null, myRating = 0, dashCharts = {};
 
-let tokenClient, accessToken = null, myRating = 0;
-
-// ── COUNTDOWN ──
-function daysUntil40() {
-  const now = new Date();
-  const diff = BIRTHDAY - now;
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-}
-
+function daysUntil40() { return Math.ceil((BIRTHDAY - new Date()) / 86400000); }
 function updateCountdowns() {
   const d = daysUntil40();
-  const el = document.getElementById('login-countdown');
-  if (el) el.textContent = `${d} days to go`;
-  const dash = document.getElementById('dash-days');
-  if (dash) dash.textContent = d;
+  const el = document.getElementById('login-countdown'); if (el) el.textContent = `${d} days to go`;
+  const dash = document.getElementById('dash-days'); if (dash) dash.textContent = d;
 }
-
 updateCountdowns();
 
-// ── DATE DEFAULT ──
-document.addEventListener('DOMContentLoaded', () => {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('log-date').value = today;
+function getTrafficColor(val, target) {
+  const r = Math.min(val / target, 1.5);
+  if (r <= 0.6)  return '#2ECC71';
+  if (r <= 0.85) return '#7DCE82';
+  if (r <= 1.0)  return '#F39C12';
+  if (r <= 1.2)  return '#E74C3C';
+  return '#C0392B';
+}
 
-  // mobile hint live update
-  ['mobile-h','mobile-m'].forEach(id => {
-    document.getElementById(id).addEventListener('input', updateMobileHint);
-  });
-  ['social-h','social-m'].forEach(id => {
-    document.getElementById(id).addEventListener('input', updateSocialHint);
-  });
+function getColorClass(val, target) {
+  const r = val / target;
+  if (r <= 0.6)  return 'state-great';
+  if (r <= 0.85) return 'state-good';
+  if (r <= 1.0)  return 'state-warn';
+  if (r <= 1.2)  return 'state-over';
+  return 'state-bad';
+}
 
-  // book title show/hide
-  document.getElementById('book-title').addEventListener('input', function() {
-    const has = this.value.trim().length > 0;
-    document.getElementById('book-meta-section').style.display = has ? 'block' : 'none';
-    document.getElementById('book-lookup-btn').style.display = has ? 'block' : 'none';
-  });
-
-  // article title show/hide
-  document.getElementById('article-title').addEventListener('input', function() {
-    document.getElementById('article-platform-section').style.display =
-      this.value.trim().length > 0 ? 'block' : 'none';
-  });
-
-  // stars
-  document.querySelectorAll('.star').forEach(star => {
-    star.addEventListener('click', function() {
-      myRating = parseInt(this.dataset.val);
-      document.querySelectorAll('.star').forEach((s, i) => {
-        s.classList.toggle('active', i < myRating);
-      });
-    });
-  });
-
-  // init google
-  initGoogle();
-});
-
-function updateMobileHint() {
+function updateMobileColor() {
   const h = parseInt(document.getElementById('mobile-h').value) || 0;
   const m = parseInt(document.getElementById('mobile-m').value) || 0;
   const total = h * 60 + m;
   const hint = document.getElementById('mobile-hint');
-  if (total === 0) { hint.textContent = 'Target: under 4h 00m per day'; hint.style.color = ''; return; }
-  if (total > 240) {
-    hint.textContent = `⚠️ ${h}h ${m}m — Over target by ${total - 240} mins`;
-    hint.style.color = 'var(--red)';
-  } else {
-    hint.textContent = `✓ ${h}h ${m}m — ${240 - total} mins under target`;
-    hint.style.color = 'var(--green)';
-  }
+  const mh = document.getElementById('mobile-h');
+  const mm = document.getElementById('mobile-m');
+  if (!total) { mh.className = mm.className = ''; hint.textContent = 'Target: under 4h 00m per day'; hint.style.color = ''; return; }
+  const cls = getColorClass(total, 240);
+  mh.className = mm.className = cls;
+  const diff = total - 240;
+  hint.textContent = diff > 0 ? `⚠️ ${h}h ${m}m — Over by ${diff} mins` : `✓ ${h}h ${m}m — ${-diff} mins under target`;
+  hint.style.color = diff > 0 ? '#E74C3C' : '#2ECC71';
 }
 
-function updateSocialHint() {
+function updateSocialColor() {
   const h = parseInt(document.getElementById('social-h').value) || 0;
   const m = parseInt(document.getElementById('social-m').value) || 0;
   const total = h * 60 + m;
   const hint = document.getElementById('social-hint');
-  if (total === 0) { hint.textContent = 'Target: under 1h 00m per day'; hint.style.color = ''; return; }
-  if (total > 60) {
-    hint.textContent = `⚠️ ${h}h ${m}m — Over target by ${total - 60} mins`;
-    hint.style.color = 'var(--red)';
-  } else {
-    hint.textContent = `✓ ${h}h ${m}m — ${60 - total} mins under target`;
-    hint.style.color = 'var(--green)';
-  }
+  const sh = document.getElementById('social-h');
+  const sm = document.getElementById('social-m');
+  if (!total) { sh.className = sm.className = ''; hint.textContent = 'Target: under 1h 00m per day'; hint.style.color = ''; return; }
+  const cls = getColorClass(total, 60);
+  sh.className = sm.className = cls;
+  const diff = total - 60;
+  hint.textContent = diff > 0 ? `⚠️ ${h}h ${m}m — Over by ${diff} mins` : `✓ ${h}h ${m}m — ${-diff} mins under target`;
+  hint.style.color = diff > 0 ? '#E74C3C' : '#2ECC71';
 }
 
-// ── GOOGLE AUTH ──
+// SPEEDOMETER
+function drawGauge(canvasId, value, max, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rw = canvas.parentElement.offsetWidth - 20;
+  const rh = rw * 0.58;
+  canvas.style.width = rw + 'px';
+  canvas.style.height = rh + 'px';
+  canvas.width = rw * dpr;
+  canvas.height = rh * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const cx = rw / 2, cy = rh * 0.9, r = Math.min(rw, rh) * 0.75;
+  const lw = r * 0.18;
+  const ratio = Math.min(value / max, 1.0);
+  ctx.clearRect(0, 0, rw, rh);
+  // Track
+  ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
+  ctx.strokeStyle = '#2A2A2A'; ctx.lineWidth = lw; ctx.lineCap = 'butt'; ctx.stroke();
+  // Coloured fill
+  if (ratio > 0) {
+    ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, Math.PI + ratio * Math.PI);
+    ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke();
+  }
+  // Needle
+  const angle = Math.PI + ratio * Math.PI;
+  const nx = cx + Math.cos(angle) * r * 0.72, ny = cy + Math.sin(angle) * r * 0.72;
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(nx, ny);
+  ctx.strokeStyle = '#F0EDE6'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, lw * 0.3, 0, 2 * Math.PI);
+  ctx.fillStyle = '#F0EDE6'; ctx.fill();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('log-date').value = today;
+  document.getElementById('mobile-h').addEventListener('input', updateMobileColor);
+  document.getElementById('mobile-m').addEventListener('input', updateMobileColor);
+  document.getElementById('social-h').addEventListener('input', updateSocialColor);
+  document.getElementById('social-m').addEventListener('input', updateSocialColor);
+  document.getElementById('book-title').addEventListener('input', function() {
+    document.getElementById('book-meta-section').style.display = this.value.trim() ? 'block' : 'none';
+  });
+  document.getElementById('article-title').addEventListener('input', function() {
+    document.getElementById('article-platform-section').style.display = this.value.trim() ? 'block' : 'none';
+  });
+  document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('click', function() {
+      myRating = parseInt(this.dataset.val);
+      document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('active', i < myRating));
+    });
+  });
+  initGoogle();
+});
+
 function initGoogle() {
   const script = document.createElement('script');
   script.src = 'https://accounts.google.com/gsi/client';
   script.onload = () => {
     tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: (response) => {
-        if (response.error) { showToast('Auth error: ' + response.error, 'error'); return; }
-        accessToken = response.access_token;
-        showApp();
-      }
+      client_id: CLIENT_ID, scope: SCOPES,
+      callback: (r) => { if (r.error) { showToast('Auth error', 'error'); return; } accessToken = r.access_token; showApp(); }
     });
   };
   document.head.appendChild(script);
 }
 
-function signIn() {
-  if (tokenClient) tokenClient.requestAccessToken();
-  else showToast('Still loading Google... try again', 'error');
-}
+function signIn() { if (tokenClient) tokenClient.requestAccessToken(); else showToast('Loading... retry', 'error'); }
+function signOut() { accessToken = null; document.getElementById('screen-app').classList.remove('active'); document.getElementById('screen-login').classList.add('active'); }
+function showApp() { document.getElementById('screen-login').classList.remove('active'); document.getElementById('screen-app').classList.add('active'); loadDashboard(); }
 
-function signOut() {
-  accessToken = null;
-  document.getElementById('screen-app').classList.remove('active');
-  document.getElementById('screen-login').classList.add('active');
-}
-
-function showApp() {
-  document.getElementById('screen-login').classList.remove('active');
-  document.getElementById('screen-app').classList.add('active');
-  document.getElementById('user-email-display').textContent = '';
-  loadDashboard();
-}
-
-// ── TABS ──
 function showTab(tab) {
-  ['log','dashboard','history'].forEach(t => {
+  ['log','dashboard','goals','history'].forEach(t => {
     document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
     document.getElementById('nav-' + t).classList.toggle('active', t === tab);
   });
   if (tab === 'dashboard') loadDashboard();
+  if (tab === 'goals') loadGoals();
   if (tab === 'history') loadHistory();
 }
 
-// ── BOOK LOOKUP ──
 async function lookupBook() {
   const title = document.getElementById('book-title').value.trim();
   if (!title) return;
-  showToast('Looking up book...');
+  showToast('Looking up...');
   try {
     const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&maxResults=1`);
     const data = await res.json();
-    if (data.items && data.items.length > 0) {
+    if (data.items) {
       const info = data.items[0].volumeInfo;
       document.getElementById('book-author').value = (info.authors || []).join(', ');
       const cats = (info.categories || []).join(' ').toLowerCase();
-      const genre = document.getElementById('book-genre');
-      if (cats.includes('fiction')) genre.value = 'Fiction';
-      else if (cats.includes('biography')) genre.value = 'Biography';
-      else if (cats.includes('self') || cats.includes('personal')) genre.value = 'Self-Help';
-      else if (cats.includes('history')) genre.value = 'History';
-      else if (cats.includes('science')) genre.value = 'Science';
-      else genre.value = 'Non-Fiction';
-      showToast('Book info filled ✓', 'success');
-    } else {
-      showToast('Book not found — fill manually', 'error');
-    }
-  } catch(e) {
-    showToast('Lookup failed — fill manually', 'error');
-  }
+      const g = document.getElementById('book-genre');
+      if (cats.includes('fiction')) g.value = 'Fiction';
+      else if (cats.includes('biography')) g.value = 'Biography';
+      else if (cats.includes('self')) g.value = 'Self-Help';
+      else if (cats.includes('history')) g.value = 'History';
+      else if (cats.includes('science')) g.value = 'Science';
+      else g.value = 'Non-Fiction';
+      showToast('Book filled ✓', 'success');
+    } else showToast('Not found — fill manually', 'error');
+  } catch(e) { showToast('Lookup failed', 'error'); }
 }
 
-// ── SUBMIT LOG ──
 async function submitLog() {
-  if (!accessToken) { showToast('Please sign in first', 'error'); return; }
-
+  if (!accessToken) { showToast('Sign in first', 'error'); return; }
   const date = document.getElementById('log-date').value;
-  if (!date) { showToast('Please select a date', 'error'); return; }
-
-  const mobileH = parseInt(document.getElementById('mobile-h').value) || 0;
-  const mobileM = parseInt(document.getElementById('mobile-m').value) || 0;
-  const mobileTotal = mobileH * 60 + mobileM;
-
-  const socialH = parseInt(document.getElementById('social-h').value) || 0;
-  const socialM = parseInt(document.getElementById('social-m').value) || 0;
-  const socialTotal = socialH * 60 + socialM;
-
-  const walkKm = parseFloat(document.getElementById('walk-km').value) || 0;
+  if (!date) { showToast('Select a date', 'error'); return; }
+  const mH = parseInt(document.getElementById('mobile-h').value) || 0;
+  const mM = parseInt(document.getElementById('mobile-m').value) || 0;
+  const sH = parseInt(document.getElementById('social-h').value) || 0;
+  const sM = parseInt(document.getElementById('social-m').value) || 0;
+  const walk = parseFloat(document.getElementById('walk-km').value) || 0;
   const bookTitle = document.getElementById('book-title').value.trim();
   const bookAuthor = document.getElementById('book-author').value.trim();
   const bookGenre = document.getElementById('book-genre').value;
   const articleTitle = document.getElementById('article-title').value.trim();
   const articlePlatform = articleTitle ? document.getElementById('article-platform').value : '';
-
-  // Format date as M/D/YYYY to match Google Sheets format
   const [y, m, d] = date.split('-');
-  const formattedDate = `${parseInt(m)}/${parseInt(d)}/${y}`;
-
-  // Row: Date | Mobile(mins) | Social(mins) | Walk(km) | Book | Article
-  const row = [formattedDate, mobileTotal, socialTotal, walkKm,
+  const row = [
+    `${parseInt(m)}/${parseInt(d)}/${y}`,
+    mH * 60 + mM, sH * 60 + sM, walk,
     bookTitle ? `${bookTitle}${bookAuthor ? ' — ' + bookAuthor : ''}${bookGenre ? ' [' + bookGenre + ']' : ''}${myRating ? ' ★' + myRating : ''}` : '',
     articleTitle ? `${articleTitle}${articlePlatform ? ' (' + articlePlatform + ')' : ''}` : ''
   ];
-
   const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving...';
-
+  btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    const res = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A:F:append?valueInputOption=USER_ENTERED`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + accessToken,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ values: [row] })
-      }
-    );
+    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A:F:append?valueInputOption=USER_ENTERED`,
+      { method: 'POST', headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [row] }) });
     if (!res.ok) throw new Error(await res.text());
-    showToast('Saved to Google Sheets ✓', 'success');
-    clearForm();
-  } catch(e) {
-    showToast('Error saving: ' + e.message, 'error');
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Save to Google Sheets ✓';
+    showToast('Saved ✓', 'success'); clearForm();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+  btn.disabled = false; btn.textContent = 'Save to Google Sheets ✓';
 }
 
 function clearForm() {
-  document.getElementById('mobile-h').value = '';
-  document.getElementById('mobile-m').value = '';
-  document.getElementById('social-h').value = '';
-  document.getElementById('social-m').value = '';
-  document.getElementById('walk-km').value = '';
-  document.getElementById('book-title').value = '';
-  document.getElementById('book-author').value = '';
+  ['mobile-h','mobile-m','social-h','social-m','walk-km','book-title','book-author','article-title'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('book-genre').value = '';
-  document.getElementById('article-title').value = '';
   document.getElementById('book-meta-section').style.display = 'none';
-  document.getElementById('book-lookup-btn').style.display = 'none';
   document.getElementById('article-platform-section').style.display = 'none';
-  myRating = 0;
-  document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
-  updateMobileHint();
-  updateSocialHint();
+  myRating = 0; document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+  ['mobile-h','mobile-m','social-h','social-m'].forEach(id => document.getElementById(id).className = '');
+  updateMobileColor(); updateSocialColor();
 }
 
-// ── LOAD SHEET DATA ──
 async function fetchSheetData() {
   if (!accessToken) return [];
-  const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A2:F1000`,
-    { headers: { 'Authorization': 'Bearer ' + accessToken } }
-  );
-  const data = await res.json();
-  return data.values || [];
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A2:F1000`,
+    { headers: { 'Authorization': 'Bearer ' + accessToken } });
+  return ((await res.json()).values || []).filter(r => r[0] && r[0].trim());
 }
 
-// ── DASHBOARD ──
-let dashCharts = {};
+function fmtMins(m) { return `${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}m`; }
+function pct(v, max) { return Math.min(Math.round(v/max*100), 100); }
+function fillColor(actual, expected) { return actual >= expected ? '#2ECC71' : '#E74C3C'; }
 
 async function loadDashboard() {
   updateCountdowns();
   const container = document.getElementById('dashboard-content');
-  container.innerHTML = '<div class="loading">Loading your data...</div>';
-
+  container.innerHTML = '<div class="loading">Loading...</div>';
   try {
     const rows = await fetchSheetData();
     if (!rows.length) { container.innerHTML = '<div class="loading">No data yet. Start logging!</div>'; return; }
-
-    // Parse
-    const today = new Date();
-    const startDate = new Date('2026-01-01');
-    const totalDays = Math.ceil((BIRTHDAY - startDate) / 86400000);
-    const daysPassed = Math.ceil((today - startDate) / 86400000);
-    const progress = Math.min(daysPassed / totalDays, 1);
-
-    let totalMobile = 0, daysUnMobile = 0;
-    let totalSocial = 0, daysUnSocial = 0;
-    let totalWalk = 0;
-    let booksRead = 0;
-    let articlesPublished = 0;
-    let mobileByDay = [], socialByDay = [], walkByDay = [];
-    let labels = [];
-
+    const today = new Date(), startDate = new Date('2026-01-01');
+    const progress = Math.min((today - startDate) / (BIRTHDAY - startDate), 1);
+    let totalMobile = 0, daysUnMobile = 0, totalSocial = 0, daysUnSocial = 0;
+    let totalWalk = 0, booksRead = 0, articlesPublished = 0, loggedDays = 0;
+    let mobileByDay = [], walkByDay = [], labels = [];
     rows.forEach(r => {
-      const mobile = parseInt(r[1]) || 0;
-      const social = parseInt(r[2]) || 0;
-      const walk = parseFloat(r[3]) || 0;
-      const book = r[4] || '';
-      const article = r[5] || '';
-
-      totalMobile += mobile;
-      if (mobile <= 240) daysUnMobile++;
-      totalSocial += social;
-      if (social <= 60) daysUnSocial++;
-      totalWalk += walk;
-      if (book) booksRead++;
-      if (article) articlesPublished++;
-
-      labels.push(r[0]);
-      mobileByDay.push(Math.round(mobile / 60 * 10) / 10);
-      socialByDay.push(mobile > 0 ? Math.round(social) : null);
-      walkByDay.push(walk);
+      const mob = parseInt(r[1]) || 0, soc = parseInt(r[2]) || 0, wlk = parseFloat(r[3]) || 0;
+      if (mob > 0 || soc > 0) loggedDays++;
+      totalMobile += mob; if (mob > 0 && mob <= 240) daysUnMobile++;
+      totalSocial += soc; if (soc > 0 && soc <= 60) daysUnSocial++;
+      totalWalk += wlk;
+      if (r[4] && r[4].trim()) booksRead++;
+      if (r[5] && r[5].trim()) articlesPublished++;
+      labels.push(r[0]); mobileByDay.push(Math.round(mob/60*10)/10); walkByDay.push(wlk);
     });
-
-    const avgMobile = rows.length ? Math.round(totalMobile / rows.length) : 0;
-    const avgSocial = rows.length ? Math.round(totalSocial / rows.length) : 0;
-
-    // Expected walk by now: 440 * progress
-    const expectedWalk = Math.round(440 * progress);
-    const walkStatus = totalWalk >= expectedWalk ? 'on-track' : 'behind';
-    const walkStatusLabel = totalWalk >= expectedWalk ? 'On Track' : 'Behind';
-
-    // Mobile: on track if avg < 240
-    const mobileOk = avgMobile < 240;
-    // Social: on track if avg < 60
-    const socialOk = avgSocial < 60;
-
-    // Books expected: 40 * progress
-    const booksExpected = Math.round(40 * progress);
-    const booksStatus = booksRead >= booksExpected ? 'on-track' : 'behind';
-
-    // Articles expected: 14 * progress
-    const articlesExpected = Math.round(14 * progress);
-    const articlesStatus = articlesPublished >= articlesExpected ? 'on-track' : 'behind';
-
-    function fmtMins(m) {
-      return `${Math.floor(m/60)}h ${m%60}m`;
-    }
+    const avgMobile = loggedDays ? Math.round(totalMobile/loggedDays) : 0;
+    const avgSocial = loggedDays ? Math.round(totalSocial/loggedDays) : 0;
+    const mc = getTrafficColor(avgMobile, 240), sc = getTrafficColor(avgSocial, 60);
+    const expWalk = Math.round(440*progress), expBooks = Math.round(40*progress), expArticles = Math.round(14*progress);
 
     container.innerHTML = `
-      <div class="section-label">Your Goals</div>
-
+      <div class="section-label">Daily Habits — Average vs Target</div>
+      <div class="gauges-row">
+        <div class="gauge-wrap"><canvas id="gauge-mobile"></canvas><div class="gauge-label">Mobile</div><div class="gauge-value" style="color:${mc}">${fmtMins(avgMobile)}</div><div class="gauge-sub">avg · target 4h</div></div>
+        <div class="gauge-wrap"><canvas id="gauge-social"></canvas><div class="gauge-label">Social</div><div class="gauge-value" style="color:${sc}">${fmtMins(avgSocial)}</div><div class="gauge-sub">avg · target 1h</div></div>
+      </div>
+      <div class="card" style="display:flex;padding:0;overflow:hidden">
+        <div style="flex:1;padding:14px;text-align:center;border-right:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">📱 Under 4h</div>
+          <div style="font-size:26px;color:#2ECC71">${daysUnMobile}</div>
+          <div style="font-size:9px;color:var(--muted)">of ${loggedDays} days</div>
+        </div>
+        <div style="flex:1;padding:14px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">💬 Under 1h</div>
+          <div style="font-size:26px;color:#2ECC71">${daysUnSocial}</div>
+          <div style="font-size:9px;color:var(--muted)">of ${loggedDays} days</div>
+        </div>
+      </div>
+      <div class="section-label">Journey Progress</div>
       <div class="goal-card">
-        <div class="goal-header">
-          <div class="goal-name">📱 Mobile Usage</div>
-          <div class="goal-status ${mobileOk ? 'on-track' : 'behind'}">${mobileOk ? 'On Track' : 'Over Target'}</div>
-        </div>
-        <div class="goal-numbers">
-          <div class="actual">${fmtMins(avgMobile)} <span style="font-size:12px;color:var(--muted)">avg/day</span></div>
-          <div class="target">Target: 4h 00m</div>
-        </div>
-        <div class="progress-bar"><div class="progress-fill ${mobileOk ? 'green' : 'red'}" style="width:${Math.min(avgMobile/240*100,100)}%"></div></div>
-        <div style="font-size:10px;color:var(--muted);margin-top:8px">${daysUnMobile} of ${rows.length} days under target (${Math.round(daysUnMobile/rows.length*100)}%)</div>
+        <div class="goal-header"><div class="goal-name">🚶 Walking</div><div class="goal-status ${totalWalk>=expWalk?'on-track':'behind'}">${totalWalk>=expWalk?'On Track':'Behind'}</div></div>
+        <div class="goal-numbers"><div class="actual">${Math.round(totalWalk*10)/10} km</div><div class="target">Goal: 440 km</div></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct(totalWalk,440)}%;background:${fillColor(totalWalk,expWalk)}"></div></div>
+        <div class="goal-sub">Expected by now: ${expWalk} km · Remaining: ${Math.max(0,Math.round((440-totalWalk)*10)/10)} km</div>
       </div>
-
       <div class="goal-card">
-        <div class="goal-header">
-          <div class="goal-name">💬 Social Media</div>
-          <div class="goal-status ${socialOk ? 'on-track' : 'behind'}">${socialOk ? 'On Track' : 'Over Target'}</div>
-        </div>
-        <div class="goal-numbers">
-          <div class="actual">${fmtMins(avgSocial)} <span style="font-size:12px;color:var(--muted)">avg/day</span></div>
-          <div class="target">Target: 1h 00m</div>
-        </div>
-        <div class="progress-bar"><div class="progress-fill ${socialOk ? 'green' : 'red'}" style="width:${Math.min(avgSocial/60*100,100)}%"></div></div>
-        <div style="font-size:10px;color:var(--muted);margin-top:8px">${daysUnSocial} of ${rows.length} days under target (${Math.round(daysUnSocial/rows.length*100)}%)</div>
+        <div class="goal-header"><div class="goal-name">📚 Books</div><div class="goal-status ${booksRead>=expBooks?'on-track':'behind'}">${booksRead>=expBooks?'On Track':'Behind'}</div></div>
+        <div class="goal-numbers"><div class="actual">${booksRead} read</div><div class="target">Goal: 40</div></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct(booksRead,40)}%;background:${fillColor(booksRead,expBooks)}"></div></div>
+        <div class="goal-sub">Expected by now: ${expBooks} · Remaining: ${40-booksRead}</div>
       </div>
-
       <div class="goal-card">
-        <div class="goal-header">
-          <div class="goal-name">🚶 Walking</div>
-          <div class="goal-status ${walkStatus}">${walkStatusLabel}</div>
-        </div>
-        <div class="goal-numbers">
-          <div class="actual">${Math.round(totalWalk * 10)/10} km</div>
-          <div class="target">Target: 440 km</div>
-        </div>
-        <div class="progress-bar"><div class="progress-fill ${walkStatus === 'on-track' ? 'green' : 'red'}" style="width:${Math.min(totalWalk/440*100,100)}%"></div></div>
-        <div style="font-size:10px;color:var(--muted);margin-top:8px">Expected by now: ${expectedWalk} km • ${totalWalk >= expectedWalk ? '✓ Ahead' : `${expectedWalk - Math.round(totalWalk)} km behind pace`}</div>
+        <div class="goal-header"><div class="goal-name">✍️ Articles</div><div class="goal-status ${articlesPublished>=expArticles?'on-track':'behind'}">${articlesPublished>=expArticles?'On Track':'Behind'}</div></div>
+        <div class="goal-numbers"><div class="actual">${articlesPublished} published</div><div class="target">Goal: 14</div></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct(articlesPublished,14)}%;background:${fillColor(articlesPublished,expArticles)}"></div></div>
+        <div class="goal-sub">Expected by now: ${expArticles} · Remaining: ${14-articlesPublished}</div>
       </div>
+      <div class="section-label">Last 14 Days</div>
+      <div class="chart-wrap"><div class="card-title">📱 Mobile Usage (hrs/day)</div><canvas id="chart-mobile"></canvas></div>
+      <div class="chart-wrap"><div class="card-title">🚶 Daily Walk (km)</div><canvas id="chart-walk"></canvas></div>`;
 
-      <div class="goal-card">
-        <div class="goal-header">
-          <div class="goal-name">📚 Books</div>
-          <div class="goal-status ${booksStatus}">${booksStatus === 'on-track' ? 'On Track' : 'Behind'}</div>
-        </div>
-        <div class="goal-numbers">
-          <div class="actual">${booksRead} <span style="font-size:12px;color:var(--muted)">read</span></div>
-          <div class="target">Target: 40</div>
-        </div>
-        <div class="progress-bar"><div class="progress-fill ${booksStatus === 'on-track' ? 'green' : 'red'}" style="width:${Math.min(booksRead/40*100,100)}%"></div></div>
-        <div style="font-size:10px;color:var(--muted);margin-top:8px">Expected by now: ${booksExpected} • ${40 - booksRead} remaining</div>
-      </div>
+    requestAnimationFrame(() => { drawGauge('gauge-mobile', avgMobile, 240, mc); drawGauge('gauge-social', avgSocial, 60, sc); });
 
-      <div class="goal-card">
-        <div class="goal-header">
-          <div class="goal-name">✍️ Articles</div>
-          <div class="goal-status ${articlesStatus}">${articlesStatus === 'on-track' ? 'On Track' : 'Behind'}</div>
-        </div>
-        <div class="goal-numbers">
-          <div class="actual">${articlesPublished} <span style="font-size:12px;color:var(--muted)">published</span></div>
-          <div class="target">Target: 14</div>
-        </div>
-        <div class="progress-bar"><div class="progress-fill ${articlesStatus === 'on-track' ? 'blue' : 'red'}" style="width:${Math.min(articlesPublished/14*100,100)}%"></div></div>
-        <div style="font-size:10px;color:var(--muted);margin-top:8px">Expected by now: ${articlesExpected} • ${14 - articlesPublished} remaining</div>
-      </div>
-
-      <div class="section-label">Trends (last 14 days)</div>
-
-      <div class="chart-wrap">
-        <div class="card-title"><span class="icon">📱</span> Mobile Usage (hrs)</div>
-        <canvas id="chart-mobile"></canvas>
-      </div>
-
-      <div class="chart-wrap">
-        <div class="card-title"><span class="icon">🚶</span> Daily Walk (km)</div>
-        <canvas id="chart-walk"></canvas>
-      </div>
-    `;
-
-    // Draw charts with last 14 days
-    const last14 = Math.max(0, labels.length - 14);
-    const chartLabels = labels.slice(last14).map(l => l.substring(0,5));
-    const chartMobile = mobileByDay.slice(last14);
-    const chartWalk = walkByDay.slice(last14);
-
-    const chartDefaults = {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#666', font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: '#222' } },
-        y: { ticks: { color: '#666', font: { family: 'JetBrains Mono', size: 9 } }, grid: { color: '#222' } }
-      }
-    };
-
+    const last14 = Math.max(0, labels.length-14);
+    const cLabels = labels.slice(last14).map(l => { const p = l.split('/'); return p.length>=2?`${p[1]}/${p[0]}`:l; });
+    const cMobile = mobileByDay.slice(last14), cWalk = walkByDay.slice(last14);
+    const cOpts = { responsive: true, plugins: { legend: { display: false } },
+      scales: { x: { ticks: { color:'#555', font:{family:'JetBrains Mono',size:8}, maxRotation:45 }, grid:{color:'#1E1E1E'} },
+                y: { ticks: { color:'#555', font:{family:'JetBrains Mono',size:8} }, grid:{color:'#1E1E1E'} } } };
     if (dashCharts.mobile) dashCharts.mobile.destroy();
     if (dashCharts.walk) dashCharts.walk.destroy();
-
-    dashCharts.mobile = new Chart(document.getElementById('chart-mobile'), {
-      type: 'bar',
-      data: {
-        labels: chartLabels,
-        datasets: [{
-          data: chartMobile,
-          backgroundColor: chartMobile.map(v => v > 4 ? '#E05A5A55' : '#4CAF7D55'),
-          borderColor: chartMobile.map(v => v > 4 ? '#E05A5A' : '#4CAF7D'),
-          borderWidth: 1,
-          borderRadius: 4
-        }]
-      },
-      options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, annotation: {} } }
-    });
-
-    dashCharts.walk = new Chart(document.getElementById('chart-walk'), {
-      type: 'line',
-      data: {
-        labels: chartLabels,
-        datasets: [{
-          data: chartWalk,
-          borderColor: '#C9A84C',
-          backgroundColor: '#C9A84C22',
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: '#C9A84C',
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: chartDefaults
-    });
-
-  } catch(e) {
-    container.innerHTML = `<div class="loading" style="color:var(--red)">Error: ${e.message}</div>`;
-  }
+    dashCharts.mobile = new Chart(document.getElementById('chart-mobile'), { type:'bar', data:{ labels:cLabels, datasets:[{
+      data:cMobile, backgroundColor:cMobile.map(v=>v>4?'#C0392B44':'#2ECC7144'), borderColor:cMobile.map(v=>v>4?'#C0392B':'#2ECC71'), borderWidth:1, borderRadius:3
+    }]}, options:cOpts });
+    dashCharts.walk = new Chart(document.getElementById('chart-walk'), { type:'line', data:{ labels:cLabels, datasets:[{
+      data:cWalk, borderColor:'#C9A84C', backgroundColor:'#C9A84C22', borderWidth:2, pointRadius:3, pointBackgroundColor:'#C9A84C', fill:true, tension:0.3
+    }]}, options:cOpts });
+  } catch(e) { document.getElementById('dashboard-content').innerHTML = `<div class="loading" style="color:var(--red)">Error: ${e.message}</div>`; }
 }
 
-// ── HISTORY ──
+async function loadGoals() {
+  const container = document.getElementById('goals-active-content');
+  container.innerHTML = '<div class="loading">Loading...</div>';
+  try {
+    const rows = await fetchSheetData();
+    const today = new Date(), startDate = new Date('2026-01-01');
+    const progress = Math.min((today - startDate) / (BIRTHDAY - startDate), 1);
+    let totalWalk=0, booksRead=0, articlesPublished=0, loggedDays=0, totalMobile=0, totalSocial=0, daysUnMobile=0, daysUnSocial=0;
+    rows.forEach(r => {
+      const mob=parseInt(r[1])||0, soc=parseInt(r[2])||0, wlk=parseFloat(r[3])||0;
+      if (mob>0||soc>0) loggedDays++;
+      totalMobile+=mob; if(mob>0&&mob<=240)daysUnMobile++;
+      totalSocial+=soc; if(soc>0&&soc<=60)daysUnSocial++;
+      totalWalk+=wlk;
+      if(r[4]&&r[4].trim())booksRead++;
+      if(r[5]&&r[5].trim())articlesPublished++;
+    });
+    const avgMobile = loggedDays ? Math.round(totalMobile/loggedDays) : 0;
+    const avgSocial = loggedDays ? Math.round(totalSocial/loggedDays) : 0;
+    const expWalk=Math.round(440*progress), expBooks=Math.round(40*progress), expArticles=Math.round(14*progress);
+    const mOk = avgMobile>0 && avgMobile<=240, sOk = avgSocial>0 && avgSocial<=60;
+
+    container.innerHTML = `
+      <div class="goal-card">
+        <div class="goal-header"><div class="goal-name">📱 Mobile &lt; 4h/day</div><div class="goal-status ${mOk?'on-track':'behind'}">${mOk?'✓ On Track':'⚠ Over Target'}</div></div>
+        <div class="goal-numbers"><div class="actual">${fmtMins(avgMobile)}</div><div class="target">Target: 4h avg</div></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct(daysUnMobile,Math.max(loggedDays,1))}%;background:${daysUnMobile/Math.max(loggedDays,1)>0.7?'#2ECC71':'#E74C3C'}"></div></div>
+        <div class="goal-sub">${daysUnMobile} of ${loggedDays} days under target (${Math.round(daysUnMobile/Math.max(loggedDays,1)*100)}%)</div>
+      </div>
+      <div class="goal-card">
+        <div class="goal-header"><div class="goal-name">💬 Social &lt; 1h/day</div><div class="goal-status ${sOk?'on-track':'behind'}">${sOk?'✓ On Track':'⚠ Over Target'}</div></div>
+        <div class="goal-numbers"><div class="actual">${fmtMins(avgSocial)}</div><div class="target">Target: 1h avg</div></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct(daysUnSocial,Math.max(loggedDays,1))}%;background:${daysUnSocial/Math.max(loggedDays,1)>0.7?'#2ECC71':'#E74C3C'}"></div></div>
+        <div class="goal-sub">${daysUnSocial} of ${loggedDays} days under target (${Math.round(daysUnSocial/Math.max(loggedDays,1)*100)}%)</div>
+      </div>
+      <div class="goals-grid">
+        <div class="goal-tile"><div class="tile-icon">🚶</div><div class="tile-num">${Math.round(totalWalk)}</div><div class="tile-label">km of 440</div><div class="tile-progress" style="color:${totalWalk>=expWalk?'#2ECC71':'#E74C3C'}">${totalWalk>=expWalk?'✓ On pace':`${expWalk-Math.round(totalWalk)} km behind`}</div></div>
+        <div class="goal-tile"><div class="tile-icon">📚</div><div class="tile-num">${booksRead}</div><div class="tile-label">of 40 books</div><div class="tile-progress" style="color:${booksRead>=expBooks?'#2ECC71':'#E74C3C'}">${booksRead>=expBooks?'✓ On pace':`${expBooks-booksRead} behind`}</div></div>
+        <div class="goal-tile"><div class="tile-icon">✍️</div><div class="tile-num">${articlesPublished}</div><div class="tile-label">of 14 articles</div><div class="tile-progress" style="color:${articlesPublished>=expArticles?'#2ECC71':'#E74C3C'}">${articlesPublished>=expArticles?'✓ On pace':`${expArticles-articlesPublished} behind`}</div></div>
+        <div class="goal-tile"><div class="tile-icon">🎂</div><div class="tile-num">${daysUntil40()}</div><div class="tile-label">days to go</div><div class="tile-progress" style="color:var(--gold)">${Math.round(progress*100)}% of journey</div></div>
+      </div>`;
+  } catch(e) { document.getElementById('goals-active-content').innerHTML = `<div class="loading" style="color:var(--red)">Error: ${e.message}</div>`; }
+}
+
 async function loadHistory() {
   const container = document.getElementById('history-content');
   container.innerHTML = '<div class="loading">Loading...</div>';
   try {
     const rows = await fetchSheetData();
-    if (!rows.length) { container.innerHTML = '<div class="loading">No data yet.</div>'; return; }
-
-    const reversed = [...rows].reverse();
-    container.innerHTML = reversed.map(r => {
-      const mobile = parseInt(r[1]) || 0;
-      const social = parseInt(r[2]) || 0;
-      const walk = parseFloat(r[3]) || 0;
-      const book = r[4] || '';
-      const article = r[5] || '';
-      const mobileOk = mobile <= 240;
-      const socialOk = social <= 60;
-      return `
-        <div class="card" style="padding:16px 18px; margin-bottom:10px">
-          <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-            <div style="font-size:13px; font-weight:500">${r[0] || ''}</div>
-            <div style="display:flex;gap:6px">
-              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${mobileOk?'#1A3A2A':'#3A1A1A'};color:${mobileOk?'var(--green)':'var(--red)'}">📱 ${Math.floor(mobile/60)}h${mobile%60}m</span>
-              <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${socialOk?'#1A3A2A':'#3A1A1A'};color:${socialOk?'var(--green)':'var(--red)'}">💬 ${Math.floor(social/60)}h${social%60}m</span>
-            </div>
-          </div>
-          <div style="display:flex;gap:16px;flex-wrap:wrap">
-            ${walk ? `<span style="font-size:11px;color:var(--gold)">🚶 ${walk} km</span>` : ''}
-            ${book ? `<span style="font-size:11px;color:var(--blue)">📚 ${book}</span>` : ''}
-            ${article ? `<span style="font-size:11px;color:var(--green)">✍️ ${article}</span>` : ''}
-            ${!walk && !book && !article ? `<span style="font-size:11px;color:var(--muted)">No extras logged</span>` : ''}
-          </div>
+    if (!rows.length) { container.innerHTML = '<div class="loading">No entries yet.</div>'; return; }
+    container.innerHTML = [...rows].reverse().map(r => {
+      const mob=parseInt(r[1])||0, soc=parseInt(r[2])||0, wlk=parseFloat(r[3])||0;
+      const mc=getTrafficColor(mob,240), sc=getTrafficColor(soc,60);
+      const fmt=m=>`${Math.floor(m/60)}h${String(m%60).padStart(2,'0')}m`;
+      return `<div class="hist-card">
+        <div class="hist-date">${r[0]||''}</div>
+        <div class="hist-badges">
+          ${mob?`<span class="badge" style="background:${mc}22;color:${mc}">📱 ${fmt(mob)}</span>`:''}
+          ${soc?`<span class="badge" style="background:${sc}22;color:${sc}">💬 ${fmt(soc)}</span>`:''}
         </div>
-      `;
+        <div class="hist-extras">
+          ${wlk?`<span class="hist-extra" style="color:var(--gold)">🚶 ${wlk} km</span>`:''}
+          ${r[4]?`<span class="hist-extra" style="color:var(--blue)">📚 ${r[4]}</span>`:''}
+          ${r[5]?`<span class="hist-extra" style="color:#2ECC71">✍️ ${r[5]}</span>`:''}
+        </div>
+      </div>`;
     }).join('');
-  } catch(e) {
-    container.innerHTML = `<div class="loading" style="color:var(--red)">Error: ${e.message}</div>`;
-  }
+  } catch(e) { document.getElementById('history-content').innerHTML = `<div class="loading" style="color:var(--red)">Error: ${e.message}</div>`; }
 }
 
-// ── TOAST ──
 let toastTimer;
-function showToast(msg, type = '') {
+function showToast(msg, type='') {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show ' + type;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+  el.textContent = msg; el.className = 'show ' + type;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.className=''; }, 3000);
 }
 </script>
 </body>
