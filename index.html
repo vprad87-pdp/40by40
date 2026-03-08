@@ -873,9 +873,9 @@ async function submitLog() {
   const articleTitle = document.getElementById('article-title').value.trim();
   const articlePlatform = articleTitle ? document.getElementById('article-platform').value : '';
 
-  // Format date as DD/MM/YYYY
+  // Format date as M/D/YYYY to match Google Sheets format
   const [y, m, d] = date.split('-');
-  const formattedDate = `${d}/${m}/${y}`;
+  const formattedDate = `${parseInt(m)}/${parseInt(d)}/${y}`;
 
   // Row: Date | Mobile(mins) | Social(mins) | Walk(km) | Book | Article
   const row = [formattedDate, mobileTotal, socialTotal, walkKm,
