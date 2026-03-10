@@ -605,6 +605,7 @@
           <div class="card">
             <div class="card-title">📅 Date</div>
             <div class="field"><input type="date" id="log-date" /></div>
+            <div id="date-indicator" style="font-size:11px;margin-top:-6px;margin-bottom:4px;min-height:16px"></div>
           </div>
 
           <div class="card">
@@ -937,6 +938,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Date default
   document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('log-date').addEventListener('change', onDateChange);
 
   document.getElementById('mobile-h').addEventListener('input', updateMobileColor);
   document.getElementById('mobile-m').addEventListener('input', updateMobileColor);
@@ -1000,6 +1002,72 @@ async function lookupBook() {
   } catch(e) { showToast('Lookup failed','error'); }
 }
 
+// ── DATE MATCH ──
+let existingRowIndex = -1; // 0-based index in sheet data (row 2 onwards), -1 = new entry
+
+function dateToSheetFormat(dateStr) {
+  const [y,m,d] = dateStr.split('-');
+  return parseInt(m)+'/'+parseInt(d)+'/'+y;
+}
+
+async function onDateChange() {
+  const date = document.getElementById('log-date').value;
+  if (!date || !accessToken) return;
+  const sheetDate = dateToSheetFormat(date);
+  const rows = await fetchSheetData();
+  const idx = rows.findIndex(r => r[0] && r[0].trim() === sheetDate);
+  const btn = document.getElementById('submit-btn');
+  const indicator = document.getElementById('date-indicator');
+
+  if (idx !== -1) {
+    // Existing entry — prefill form
+    existingRowIndex = idx;
+    const r = rows[idx];
+    const mob = parseInt(r[1])||0, soc = parseInt(r[2])||0;
+    document.getElementById('mobile-h').value = Math.floor(mob/60);
+    document.getElementById('mobile-m').value = mob%60;
+    document.getElementById('social-h').value = Math.floor(soc/60);
+    document.getElementById('social-m').value = soc%60;
+    document.getElementById('walk-km').value = parseFloat(r[3])||'';
+    // Parse book: "Title — Author [Genre] ★rating"
+    if (r[4] && r[4].trim()) {
+      const bookRaw = r[4];
+      const starIdx = bookRaw.indexOf(' ★');
+      if (starIdx !== -1) {
+        myRating = parseInt(bookRaw.slice(starIdx+2));
+        document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('active', i<myRating));
+      }
+      const genreMatch = bookRaw.match(/\[([^\]]+)\]/);
+      const authorMatch = bookRaw.match(/ — ([^\[★]+)/);
+      const titleEnd = bookRaw.indexOf(' — ') !== -1 ? bookRaw.indexOf(' — ') : bookRaw.length;
+      document.getElementById('book-title').value = bookRaw.slice(0, titleEnd).trim();
+      document.getElementById('book-author').value = authorMatch ? authorMatch[1].trim() : '';
+      document.getElementById('book-genre').value = genreMatch ? genreMatch[1] : '';
+      document.getElementById('book-meta-section').style.display = 'block';
+    }
+    // Parse article: "Title (Platform)"
+    if (r[5] && r[5].trim()) {
+      const artRaw = r[5];
+      const platMatch = artRaw.match(/\(([^)]+)\)$/);
+      document.getElementById('article-title').value = platMatch ? artRaw.slice(0, artRaw.lastIndexOf(' (')).trim() : artRaw;
+      if (platMatch) document.getElementById('article-platform').value = platMatch[1];
+      document.getElementById('article-platform-section').style.display = 'block';
+    }
+    updateMobileColor(); updateSocialColor();
+    btn.textContent = 'Update Entry ✓';
+    btn.style.background = '#B8860B';
+    if (indicator) { indicator.textContent = '✏️ Editing existing entry for '+sheetDate; indicator.style.color = 'var(--gold)'; }
+  } else {
+    // New entry
+    existingRowIndex = -1;
+    clearForm();
+    document.getElementById('log-date').value = date;
+    btn.textContent = 'Save to Google Sheets ✓';
+    btn.style.background = '';
+    if (indicator) { indicator.textContent = ''; }
+  }
+}
+
 // ── SUBMIT ──
 async function submitLog() {
   if (!accessToken) { showToast('Sign in first','error'); return; }
@@ -1025,11 +1093,27 @@ async function submitLog() {
   const btn=document.getElementById('submit-btn');
   btn.disabled=true; btn.textContent='Saving...';
   try {
-    const res=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/Sheet1!A:F:append?valueInputOption=USER_ENTERED',
-      {method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},
-       body:JSON.stringify({values:[row]})});
-    if(!res.ok) throw new Error(await res.text());
-    showToast('Saved ✓','success'); clearForm();
+    if (existingRowIndex !== -1) {
+      // UPDATE — row 2 is index 0, so sheet row = existingRowIndex + 2
+      const sheetRow = existingRowIndex + 2;
+      const res = await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/Sheet1!A'+sheetRow+':F'+sheetRow+'?valueInputOption=USER_ENTERED',
+        {method:'PUT', headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},
+         body:JSON.stringify({values:[row]})});
+      if(!res.ok) throw new Error(await res.text());
+      showToast('Updated ✓','success');
+    } else {
+      // INSERT
+      const res=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+'/values/Sheet1!A:F:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS',
+        {method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},
+         body:JSON.stringify({values:[row]})});
+      if(!res.ok) throw new Error(await res.text());
+      showToast('Saved ✓','success');
+    }
+    existingRowIndex = -1;
+    clearForm();
+    btn.style.background = '';
+    const indicator = document.getElementById('date-indicator');
+    if (indicator) indicator.textContent = '';
   } catch(e) { showToast('Error: '+e.message,'error'); }
   btn.disabled=false; btn.textContent='Save to Google Sheets ✓';
 }
