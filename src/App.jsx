@@ -1,120 +1,128 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useAuth } from './hooks/useAuth'
+import LoginScreen from './components/screens/LoginScreen'
+import LogScreen from './components/screens/LogScreen'
+
+// Placeholder screens for future sessions
+function HomeScreen()    { return <div style={placeholder}>🏠 Home — Session 5</div> }
+function GoalsScreen()   { return <div style={placeholder}>🎯 Goals — Session 4</div> }
+function HistoryScreen() { return <div style={placeholder}>📅 History — Session 6</div> }
+
+const placeholder = {
+  minHeight: '100dvh',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontFamily: 'Outfit, sans-serif',
+  color: '#7A8F7A',
+  fontSize: '16px',
+  background: '#F0F4F0',
+}
+
+const TABS = [
+  { id: 'home',    label: 'Home',    emoji: '🏠' },
+  { id: 'goals',   label: 'Goals',   emoji: '🎯' },
+  { id: 'log',     label: 'Log',     emoji: '✏️'  },
+  { id: 'history', label: 'History', emoji: '📅' },
+]
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { user, loading, signInWithGoogle, signOut } = useAuth()
+  const [activeTab, setActiveTab] = useState('log')
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#F0F4F0',
+      }}>
+        <p style={{ fontFamily: 'Outfit, sans-serif', color: '#7A8F7A' }}>
+          Loading...
+        </p>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <LoginScreen onSignIn={signInWithGoogle} />
+  }
+
+  function renderScreen() {
+    switch (activeTab) {
+      case 'home':    return <HomeScreen />
+      case 'goals':   return <GoalsScreen />
+      case 'log':     return <LogScreen user={user} />
+      case 'history': return <HistoryScreen />
+      default:        return <LogScreen user={user} />
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div style={{ maxWidth: '480px', margin: '0 auto', position: 'relative' }}>
 
-      <div className="ticks"></div>
+      {/* Screen */}
+      {renderScreen()}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {/* Bottom Nav */}
+      <nav style={{
+        position: 'fixed',
+        bottom: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
+        maxWidth: '480px',
+        background: '#fff',
+        borderTop: '1px solid #D8E4D8',
+        display: 'flex',
+        zIndex: 50,
+      }}>
+        {TABS.map(tab => {
+          const active = activeTab === tab.id
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                flex: 1,
+                padding: '10px 0 12px',
+                border: 'none',
+                background: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '3px',
+              }}
+            >
+              <span style={{ fontSize: '20px', lineHeight: 1 }}>{tab.emoji}</span>
+              <span style={{
+                fontSize: '10px',
+                fontFamily: 'Outfit, sans-serif',
+                fontWeight: active ? 700 : 400,
+                color: active ? '#7A9E7E' : '#7A8F7A',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}>
+                {tab.label}
+              </span>
+              {active && (
+                <span style={{
+                  width: '4px',
+                  height: '4px',
+                  borderRadius: '50%',
+                  background: '#7A9E7E',
+                  marginTop: '1px',
+                }} />
+              )}
+            </button>
+          )
+        })}
+      </nav>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </div>
   )
 }
 
