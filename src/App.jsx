@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useAuth } from './hooks/useAuth'
 import LoginScreen from './components/screens/LoginScreen'
 import LogScreen from './components/screens/LogScreen'
+import GoalsScreen from './components/screens/GoalsScreen'
 
 // Placeholder screens for future sessions
 function HomeScreen()    { return <div style={placeholder}>🏠 Home — Session 5</div> }
-function GoalsScreen()   { return <div style={placeholder}>🎯 Goals — Session 4</div> }
 function HistoryScreen() { return <div style={placeholder}>📅 History — Session 6</div> }
 
 const placeholder = {
