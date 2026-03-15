@@ -2,17 +2,6 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
-/**
- * Reusable slide-up bottom sheet.
- *
- * Props:
- *   isOpen    {boolean}   — show/hide
- *   onClose   {function}  — called on backdrop click or X tap
- *   title     {string}    — header text
- *   emoji     {string}    — optional emoji beside title
- *   accentColor {string}  — hex colour for the top drag pill + title
- *   children  {ReactNode}
- */
 export default function BottomSheet({
   isOpen,
   onClose,
@@ -20,10 +9,10 @@ export default function BottomSheet({
   emoji,
   accentColor = "var(--sage)",
   children,
+  footer,
 }) {
   const sheetRef = useRef(null);
 
-  // Lock body scroll while open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -35,7 +24,6 @@ export default function BottomSheet({
     };
   }, [isOpen]);
 
-  // Close on Escape key
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === "Escape" && isOpen) onClose();
@@ -46,74 +34,117 @@ export default function BottomSheet({
 
   return (
     <>
-      {/* ── Backdrop ─────────────────────────────────────────────────── */}
+      {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 transition-opacity duration-300 ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        style={{ background: "rgba(28,43,28,0.55)" }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 40,
+          background: 'rgba(28,43,28,0.55)',
+          transition: 'opacity 0.3s',
+          opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? 'auto' : 'none',
+        }}
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* ── Sheet ────────────────────────────────────────────────────── */}
+      {/* Sheet */}
       <div
         ref={sheetRef}
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl flex flex-col
-          transition-transform duration-350 ease-out
-          ${isOpen ? "translate-y-0" : "translate-y-full"}`}
         style={{
-          background:   "var(--surface)",
-          maxHeight:    "88vh",
-          boxShadow:    "0 -8px 32px rgba(28,43,28,0.18)",
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          borderRadius: '16px 16px 0 0',
+          background: 'var(--surface)',
+          maxHeight: '92vh',
+          boxShadow: '0 -8px 32px rgba(28,43,28,0.18)',
+          transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 0.35s ease-out',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         {/* Drag pill */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div
-            className="w-10 h-1 rounded-full opacity-40"
-            style={{ background: accentColor }}
-          />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
+          <div style={{
+            width: '40px',
+            height: '4px',
+            borderRadius: '2px',
+            background: accentColor,
+            opacity: 0.4,
+          }} />
         </div>
 
-        {/* Header */}
-        <div
-          className="flex items-center justify-between px-5 pb-3 pt-1 flex-shrink-0"
-          style={{ borderBottom: "1px solid var(--border)" }}
-        >
-          <div className="flex items-center gap-2">
-            {emoji && (
-              <span className="text-xl leading-none">{emoji}</span>
-            )}
-            <h2
-              className="text-lg font-semibold leading-tight"
-              style={{ fontFamily: "Lora, serif", color: "var(--brown)" }}
+        {/* Header — only shown if title prop is passed */}
+        {title && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '4px 20px 12px',
+            borderBottom: '1px solid var(--border)',
+            flexShrink: 0,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {emoji && <span style={{ fontSize: '20px', lineHeight: 1 }}>{emoji}</span>}
+              <h2 style={{
+                fontFamily: 'Lora, serif',
+                color: 'var(--brown)',
+                fontSize: '18px',
+                fontWeight: 600,
+              }}>
+                {title}
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '50%',
+                background: 'var(--surface2)',
+                color: 'var(--muted)',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+              aria-label="Close"
             >
-              {title}
-            </h2>
+              <X size={16} />
+            </button>
           </div>
-
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full
-              transition-colors duration-150"
-            style={{
-              background: "var(--surface2)",
-              color:       "var(--muted)",
-            }}
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
-        </div>
+        )}
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+        }}>
           {children}
         </div>
+
+        {/* Fixed footer — buttons always visible */}
+        {footer && (
+          <div style={{
+            flexShrink: 0,
+            padding: '12px 16px 24px',
+            borderTop: '1px solid var(--border)',
+            background: 'var(--surface)',
+          }}>
+            {footer}
+          </div>
+        )}
       </div>
     </>
   );

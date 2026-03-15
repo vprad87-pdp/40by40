@@ -1,11 +1,13 @@
 // src/App.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from './hooks/useAuth'
 import LoginScreen from './components/screens/LoginScreen'
 import HomeScreen from './components/screens/HomeScreen'
 import LogScreen from './components/screens/LogScreen'
 import GoalsScreen from './components/screens/GoalsScreen'
 import HistoryScreen from './components/screens/HistoryScreen'
+import MonthlyCheckin from './components/modals/MonthlyCheckin'
+import { useMonthlyData } from './hooks/useMonthlyData'
 
 const TABS = [
   { id: 'home',    label: 'Home',    emoji: '🏠' },
@@ -16,17 +18,20 @@ const TABS = [
 
 function App() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
-  const [activeTab, setActiveTab]   = useState('home')  // ← changed default to home
-  const [goalFilter, setGoalFilter] = useState(null)    // ← new: bucket filter state
+  const { shouldShowModal, saveCheckin, snoozeCheckin } = useMonthlyData(user?.id)
+  const [activeTab, setActiveTab]   = useState('home')
+  const [goalFilter, setGoalFilter] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Handle bucket tap on Home screen:
-  // saves which bucket was tapped, then switches to Goals tab
+  useEffect(() => {
+  if (shouldShowModal) setIsModalOpen(true)
+}, [shouldShowModal])
+
   function handleBucketTap(bucketKey) {
     setGoalFilter(bucketKey)
     setActiveTab('goals')
   }
 
-  // When user manually taps Goals tab, clear any active filter
   function handleTabPress(tabId) {
     if (tabId === 'goals') setGoalFilter(null)
     setActiveTab(tabId)
@@ -55,18 +60,9 @@ function App() {
   function renderScreen() {
     switch (activeTab) {
       case 'home':
-        return (
-          <HomeScreen
-            user={user}
-            onBucketTap={handleBucketTap}
-          />
-        )
+        return <HomeScreen user={user} onBucketTap={handleBucketTap} />
       case 'goals':
-        return (
-          <GoalsScreen
-            goalFilter={goalFilter}  // wired now, GoalsScreen will use in future session
-          />
-        )
+        return <GoalsScreen goalFilter={goalFilter} />
       case 'log':
         return <LogScreen user={user} />
       case 'history':
@@ -84,12 +80,12 @@ function App() {
 
       {/* Bottom Nav */}
       <nav style={{
-        position:  'fixed',
-        bottom:    0,
-        left:      '50%',
-        transform: 'translateX(-50%)',
-        width:     '100%',
-        maxWidth:  '480px',
+        position:   'fixed',
+        bottom:     0,
+        left:       '50%',
+        transform:  'translateX(-50%)',
+        width:      '100%',
+        maxWidth:   '480px',
         background: '#fff',
         borderTop:  '1px solid #D8E4D8',
         display:    'flex',
@@ -137,6 +133,14 @@ function App() {
           )
         })}
       </nav>
+
+      {/* Monthly Check-in Modal */}
+     <MonthlyCheckin
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  onSave={saveCheckin}
+  onSnooze={snoozeCheckin}
+/>
 
     </div>
   )
