@@ -1,5 +1,4 @@
 // src/components/screens/HomeScreen.jsx
-import { useMemo } from 'react'
 import { useHomeData } from '../../hooks/useHomeData'
 import { BIRTHDAY } from '../../constants/goals'
 
@@ -21,40 +20,36 @@ function getDaysLeft() {
 
 const BUCKET_CONFIG = [
   {
-    key:     'achieved',
-    label:   'Achieved',
-    emoji:   '🏆',
-    bg:      '#f0fdf4',
-    border:  '#86efac',
-    color:   '#15803d',
-    pill:    '#dcfce7',
+    key:    'achieved',
+    label:  'Achieved',
+    emoji:  '🏆',
+    bg:     '#f0fdf4',
+    border: '#86efac',
+    color:  '#15803d',
   },
   {
-    key:     'on_target',
-    label:   'On Target',
-    emoji:   '🎯',
-    bg:      '#eff6ff',
-    border:  '#93c5fd',
-    color:   '#1d4ed8',
-    pill:    '#dbeafe',
+    key:    'on_target',
+    label:  'On Target',
+    emoji:  '🎯',
+    bg:     '#eff6ff',
+    border: '#93c5fd',
+    color:  '#1d4ed8',
   },
   {
-    key:     'behind',
-    label:   'Behind',
-    emoji:   '⚠️',
-    bg:      '#fffbeb',
-    border:  '#fcd34d',
-    color:   '#b45309',
-    pill:    '#fef3c7',
+    key:    'behind',
+    label:  'Behind',
+    emoji:  '⚠️',
+    bg:     '#fffbeb',
+    border: '#fcd34d',
+    color:  '#b45309',
   },
   {
-    key:     'dreadful',
-    label:   'Dreadful',
-    emoji:   '🔴',
-    bg:      '#fef2f2',
-    border:  '#fca5a5',
-    color:   '#b91c1c',
-    pill:    '#fee2e2',
+    key:    'dreadful',
+    label:  'Dreadful',
+    emoji:  '🔴',
+    bg:     '#fef2f2',
+    border: '#fca5a5',
+    color:  '#b91c1c',
   },
 ]
 
@@ -63,10 +58,10 @@ const BUCKET_CONFIG = [
 function GreetingBar({ name }) {
   return (
     <p style={{
-      fontFamily:   'Outfit, sans-serif',
-      fontSize:     '15px',
-      color:        '#7A8F7A',
-      margin:       '0 0 16px',
+      fontFamily:    'Outfit, sans-serif',
+      fontSize:      '15px',
+      color:         '#7A8F7A',
+      margin:        '0 0 16px',
       letterSpacing: '0.01em',
     }}>
       {getGreeting(name)}
@@ -78,12 +73,12 @@ function CountdownCard() {
   const days = getDaysLeft()
   return (
     <div style={{
-      background:   '#fff',
-      border:       '1px solid #D8E4D8',
-      borderRadius: '16px',
-      padding:      '20px 24px',
-      marginBottom: '20px',
-      textAlign:    'center',
+      background:    '#fff',
+      border:        '1px solid #D8E4D8',
+      borderRadius:  '16px',
+      padding:       '20px 24px',
+      marginBottom:  '20px',
+      textAlign:     'center',
     }}>
       <p style={{
         fontFamily:    'Outfit, sans-serif',
@@ -160,47 +155,64 @@ function BucketTile({ config, count, onTap }) {
   )
 }
 
-function QuickStats({ daysLogged, walkTotal, booksRead }) {
-  const stats = [
-    { label: 'Days Logged',  value: daysLogged,          unit: 'days'  },
-    { label: 'Walk Total',   value: `${walkTotal} km`,   unit: null    },
-    { label: 'Books Read',   value: booksRead,            unit: 'books' },
-  ]
-
+function QuickStats({ stats }) {
   return (
-    <div style={{
-      background:    '#fff',
-      border:        '1px solid #D8E4D8',
-      borderRadius:  '16px',
-      padding:       '16px 20px',
-      marginTop:     '20px',
-      display:       'flex',
-      justifyContent: 'space-between',
-    }}>
-      {stats.map((s, i) => (
-        <div key={i} style={{ textAlign: 'center', flex: 1 }}>
-          <p style={{
-            fontFamily: 'Lora, serif',
-            fontSize:   '22px',
-            fontWeight: 700,
-            color:      '#3D2B1F',
-            margin:     '0 0 2px',
+    <div style={{ marginTop: '20px' }}>
+      <p style={{
+        fontFamily:    'Outfit, sans-serif',
+        fontSize:      '11px',
+        fontWeight:    600,
+        color:         '#7A9E7E',
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        margin:        '0 0 10px',
+      }}>
+        Quick Stats
+      </p>
+      <div style={{
+        display:             'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap:                 '10px',
+      }}>
+        {stats.map(s => (
+          <div key={s.key} style={{
+            background:   '#fff',
+            border:       `1px solid ${s.good ? '#86efac' : '#D8E4D8'}`,
+            borderRadius: '14px',
+            padding:      '14px 16px',
           }}>
-            {s.value}
-          </p>
-          <p style={{
-            fontFamily:    'Outfit, sans-serif',
-            fontSize:      '10px',
-            fontWeight:    600,
-            color:         '#7A8F7A',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            margin:        0,
-          }}>
-            {s.label}
-          </p>
-        </div>
-      ))}
+            <p style={{
+              fontFamily:    'Outfit, sans-serif',
+              fontSize:      '10px',
+              fontWeight:    600,
+              color:         '#7A9E7E',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              margin:        '0 0 4px',
+            }}>
+              {s.label}
+            </p>
+            <p style={{
+              fontFamily: 'Lora, serif',
+              fontSize:   '22px',
+              fontWeight: 700,
+              color:      s.good ? '#15803d' : '#3D2B1F',
+              margin:     '0 0 2px',
+              lineHeight: 1.1,
+            }}>
+              {s.value}
+            </p>
+            <p style={{
+              fontFamily: 'Outfit, sans-serif',
+              fontSize:   '11px',
+              color:      '#7A8F7A',
+              margin:     0,
+            }}>
+              {s.subtext}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -286,11 +298,7 @@ export default function HomeScreen({ user, onBucketTap }) {
       </p>
 
       {/* Quick stats */}
-      <QuickStats
-        daysLogged={data.daysLogged}
-        walkTotal={data.walkTotal}
-        booksRead={data.booksRead}
-      />
+      <QuickStats stats={data.quickStats} />
 
     </div>
   )

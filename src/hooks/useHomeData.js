@@ -1,69 +1,60 @@
 // src/hooks/useHomeData.js
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
-import { ALL_GOALS, BIRTHDAY } from '../constants/goals'
+import { ALL_GOALS, CATEGORIES, BIRTHDAY } from '../constants/goals'
 
 // ─── Bucket classification helpers ────────────────────────────────────────────
 
-// How many days have passed since Jan 1 2026 (the tracking start date)
 function daysSinceStart() {
   const start = new Date('2026-01-01T00:00:00+05:30')
   const now   = new Date()
   return Math.max(1, Math.floor((now - start) / (1000 * 60 * 60 * 24)))
 }
 
-// Total days in the journey (Jan 1 2026 → May 9 2027)
 function totalJourneyDays() {
   const start = new Date('2026-01-01T00:00:00+05:30')
   return Math.floor((BIRTHDAY - start) / (1000 * 60 * 60 * 24))
 }
 
-// What fraction of the journey is done? e.g. 0.30 = 30% through
 function journeyFraction() {
   return daysSinceStart() / totalJourneyDays()
 }
 
-// Classify a single goal into a bucket string
 function classifyGoal(goal, dailyLogs, milestoneMap) {
-
-  // ── MILESTONE goals ──────────────────────────────────────────────────────
   if (goal.type === 'milestone') {
-    const done = milestoneMap[goal.id]?.is_done === true
-    return done ? 'achieved' : 'dreadful'
+    return milestoneMap[goal.id]?.is_done === true ? 'achieved' : 'dreadful'
   }
 
-  // ── DAILY goals (mobile_mins, social_mins) ───────────────────────────────
   if (goal.type === 'daily' && goal.table === 'daily_logs') {
     const logs = dailyLogs.filter(l => l[goal.field] != null)
     if (logs.length === 0) return 'dreadful'
-
     const avg = logs.reduce((sum, l) => sum + l[goal.field], 0) / logs.length
-
     if (goal.direction === 'under') {
-      // Lower is better (e.g. screen time)
-      if (avg <= goal.targetValue)                          return 'achieved'
-      if (avg <= goal.targetValue * 1.15)                   return 'on_target'
-      if (avg <= goal.targetValue * 1.40)                   return 'behind'
+      if (avg <= goal.targetValue)        return 'achieved'
+      if (avg <= goal.targetValue * 1.15) return 'on_target'
+      if (avg <= goal.targetValue * 1.40) return 'behind'
       return 'dreadful'
     }
   }
 
-  // ── CUMULATIVE walk goal (daily_logs) ────────────────────────────────────
   if (goal.type === 'cumulative' && goal.table === 'daily_logs') {
     const total = dailyLogs.reduce((sum, l) => sum + (l[goal.field] || 0), 0)
     if (total === 0) return 'dreadful'
-
     const expectedByNow = goal.targetValue * journeyFraction()
-
-    if (total >= goal.targetValue)              return 'achieved'
-    if (total >= expectedByNow * 0.90)          return 'on_target'
-    if (total >= expectedByNow * 0.60)          return 'behind'
+    if (total >= goal.targetValue)     return 'achieved'
+    if (total >= expectedByNow * 0.90) return 'on_target'
+    if (total >= expectedByNow * 0.60) return 'behind'
     return 'dreadful'
   }
 
-  // ── Everything else — stub until later sessions ──────────────────────────
-  // monthly, quarterly, cumulative from monthly_checkins, books, articles
   return 'dreadful'
+}
+
+// ─── Pick 4 random stats from pool ────────────────────────────────────────────
+
+function pickRandom(arr, n) {
+  const shuffled = [...arr].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, n)
 }
 
 // ─── Main hook ────────────────────────────────────────────────────────────────
@@ -81,7 +72,7 @@ export function useHomeData(userId) {
       setError(null)
 
       try {
-        // 1. Fetch all daily logs for this user
+        // 1. All daily logs
         const { data: logs, error: logsErr } = await supabase
           .from('daily_logs')
           .select('log_date, mobile_mins, social_mins, walk_km')
@@ -89,7 +80,7 @@ export function useHomeData(userId) {
 
         if (logsErr) throw logsErr
 
-        // 2. Fetch all milestones for this user
+        // 2. All milestones
         const { data: milestones, error: msErr } = await supabase
           .from('milestones')
           .select('goal_id, is_done')
@@ -97,27 +88,104 @@ export function useHomeData(userId) {
 
         if (msErr) throw msErr
 
-        // 3. Build a quick lookup map: { goal_id: { is_done } }
+        // 3. Milestone lookup map
         const milestoneMap = {}
         milestones.forEach(m => { milestoneMap[m.goal_id] = m })
 
-        // 4. Classify every goal into a bucket
+        // 4. Bucket classification
         const buckets = { achieved: [], on_target: [], behind: [], dreadful: [] }
         ALL_GOALS.forEach(goal => {
           const bucket = classifyGoal(goal, logs, milestoneMap)
           buckets[bucket].push(goal)
         })
 
-        // 5. Quick stats
+        // 5. Days logged + walk total
         const daysLogged = logs.length
-        const walkTotal  = logs.reduce((sum, l) => sum + (l.walk_km || 0), 0)
+        const walkTotal  = Math.round(
+          logs.reduce((sum, l) => sum + (l.walk_km || 0), 0) * 10
+        ) / 10
 
-        setData({
-          buckets,
-          daysLogged,
-          walkTotal: Math.round(walkTotal * 10) / 10, // 1 decimal
-          booksRead: 0, // stub until Session 10
-        })
+        // 6. Walk this week (last 7 days)
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        const walkThisWeek = Math.round(
+          logs
+            .filter(l => new Date(l.log_date) >= sevenDaysAgo)
+            .reduce((sum, l) => sum + (l.walk_km || 0), 0) * 10
+        ) / 10
+
+        // 7. Avg mobile mins/day (last 30 days)
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        const recentLogs = logs.filter(l => new Date(l.log_date) >= thirtyDaysAgo)
+        const avgMobile = recentLogs.length > 0
+          ? Math.round(recentLogs.reduce((sum, l) => sum + (l.mobile_mins || 0), 0) / recentLogs.length)
+          : 0
+
+        // 8. Avg social mins/day (last 30 days)
+        const avgSocial = recentLogs.length > 0
+          ? Math.round(recentLogs.reduce((sum, l) => sum + (l.social_mins || 0), 0) / recentLogs.length)
+          : 0
+
+        // 9. Travel & Experiences milestones done
+        const travelGoals = CATEGORIES.find(c => c.id === 'travel')?.goals || []
+        const travelDone  = travelGoals.filter(g => milestoneMap[g.id]?.is_done === true).length
+
+        // 10. Total milestones done
+        const milestonesDone = milestones.filter(m => m.is_done === true).length
+
+        // 11. Build the full stat pool
+        const statPool = [
+          {
+            key:     'mobile',
+            label:   'Avg Mobile',
+            value:   `${Math.floor(avgMobile / 60)}h ${avgMobile % 60}m`,
+            subtext: 'per day · last 30 days',
+            target:  '< 4h target',
+            good:    avgMobile <= 240,
+          },
+          {
+            key:     'social',
+            label:   'Avg Social',
+            value:   `${Math.floor(avgSocial / 60)}h ${avgSocial % 60}m`,
+            subtext: 'per day · last 30 days',
+            target:  '< 1h target',
+            good:    avgSocial <= 60,
+          },
+          {
+            key:     'books',
+            label:   'Books Read',
+            value:   0,
+            subtext: 'of 40 target',
+            good:    false,
+          },
+          {
+            key:     'walk_week',
+            label:   'Walk This Week',
+            value:   `${walkThisWeek} km`,
+            subtext: 'last 7 days',
+            good:    walkThisWeek >= 10, // ~10km/week is decent pace for 544km goal
+          },
+          {
+            key:     'travel',
+            label:   'Travel Done',
+            value:   `${travelDone} / ${travelGoals.length}`,
+            subtext: 'experiences ticked',
+            good:    travelDone > 0,
+          },
+          {
+            key:     'milestones',
+            label:   'Milestones Done',
+            value:   milestonesDone,
+            subtext: `of ${milestones.length || ALL_GOALS.filter(g => g.type === 'milestone').length} total`,
+            good:    milestonesDone > 0,
+          },
+        ]
+
+        // 12. Pick 4 randomly
+        const quickStats = pickRandom(statPool, 4)
+
+        setData({ buckets, daysLogged, walkTotal, quickStats })
 
       } catch (err) {
         console.error('useHomeData error:', err)

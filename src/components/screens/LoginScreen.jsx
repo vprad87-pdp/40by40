@@ -29,15 +29,15 @@ export default function LoginScreen({ onSignIn }) {
       fontFamily: 'Outfit, sans-serif'
     }}>
 
-      {/* Title */}
-      <h1 style={{
-        fontFamily: 'Lora, serif',
-        fontSize: '2.5rem',
-        color: '#3D2B1F',
-        margin: '0 0 0.25rem 0'
-      }}>
-        40by40
-      </h1>
+     {/* Signature */}
+      <img
+        src="/signature.jpg"
+        alt="40by40"
+        style={{
+          width: '180px',
+          marginBottom: '0.25rem',
+        }}
+      />
 
       {/* Subtitle */}
       <p style={{
