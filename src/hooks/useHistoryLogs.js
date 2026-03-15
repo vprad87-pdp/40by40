@@ -17,8 +17,11 @@ export function useHistoryLogs() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const fetchLogs = useCallback(async () => {
-    if (!user) return
+const fetchLogs = useCallback(async () => {
+    if (!user) {
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setError(null)
 

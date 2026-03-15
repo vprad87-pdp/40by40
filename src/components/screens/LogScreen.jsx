@@ -155,8 +155,11 @@ export default function LogScreen({ user }) {
     setFetchDone(true);
   }, [fetchByDate]);
 
-  useEffect(() => {
-  if (!user?.id) return
+useEffect(() => {
+  if (!user?.id) {
+    setFetchDone(true)
+    return
+  }
   loadDate(selectedDate);
 }, [selectedDate, loadDate, user?.id]);
 

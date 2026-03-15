@@ -5,24 +5,7 @@ import LoginScreen from './components/screens/LoginScreen'
 import HomeScreen from './components/screens/HomeScreen'
 import LogScreen from './components/screens/LogScreen'
 import GoalsScreen from './components/screens/GoalsScreen'
-
-// Placeholder for Session 6
-function HistoryScreen() {
-  return (
-    <div style={{
-      minHeight:      '100dvh',
-      display:        'flex',
-      alignItems:     'center',
-      justifyContent: 'center',
-      fontFamily:     'Outfit, sans-serif',
-      color:          '#7A8F7A',
-      fontSize:       '16px',
-      background:     '#F0F4F0',
-    }}>
-      📅 History — Session 6
-    </div>
-  )
-}
+import HistoryScreen from './components/screens/HistoryScreen'
 
 const TABS = [
   { id: 'home',    label: 'Home',    emoji: '🏠' },
