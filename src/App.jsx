@@ -8,12 +8,14 @@ import GoalsScreen from './components/screens/GoalsScreen'
 import HistoryScreen from './components/screens/HistoryScreen'
 import MonthlyCheckin from './components/modals/MonthlyCheckin'
 import { useMonthlyData } from './hooks/useMonthlyData'
+import DashboardScreen from './components/screens/DashboardScreen'
 
 const TABS = [
-  { id: 'home',    label: 'Home',    emoji: '🏠' },
-  { id: 'goals',   label: 'Goals',   emoji: '🎯' },
-  { id: 'log',     label: 'Log',     emoji: '✏️'  },
-  { id: 'history', label: 'History', emoji: '📅' },
+  { id: 'home',      label: 'Home',      emoji: '🏠' },
+  { id: 'goals',     label: 'Goals',     emoji: '🎯' },
+  { id: 'log',       label: 'Log',       emoji: '✏️'  },
+  { id: 'history',   label: 'History',   emoji: '📅' },
+  { id: 'dashboard', label: 'Dashboard', emoji: '📊' },
 ]
 
 function App() {
@@ -67,6 +69,8 @@ function App() {
         return <LogScreen user={user} />
       case 'history':
         return <HistoryScreen />
+        case 'dashboard':
+  return <DashboardScreen />
       default:
         return <HomeScreen user={user} onBucketTap={handleBucketTap} />
     }
