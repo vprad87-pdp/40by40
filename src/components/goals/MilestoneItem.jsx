@@ -1,33 +1,21 @@
-// src/components/goals/GoalItem.jsx
+// src/components/goals/MilestoneItem.jsx
 import { useState } from "react";
-import { CheckCircle2, Circle, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { GOAL_TYPE_META } from "../../constants/goals";
 
-/**
- * Renders a single goal row inside the category bottom sheet.
- *
- * Props:
- *   goal          {object}  — goal config from CATEGORIES
- *   milestone     {object}  — milestone row from useMilestones (may be undefined)
- *   cumulativeVal {number}  — current cumulative value (books read, km walked, etc.)
- *   onToggle      {func}    — (goalId, isDone) => void  — only for milestone type
- *   onTapTracked  {func}    — () => void  — for daily/cumulative/monthly goals
- *   accentColor   {string}  — category colour
- */
-export default function GoalItem({
+export default function MilestoneItem({
   goal,
   milestone,
   cumulativeVal = 0,
   onToggle,
   onTapTracked,
-  accentColor = "var(--sage)",
+  accentColor = "#7A9E7E",
 }) {
   const [toggling, setToggling] = useState(false);
 
   const typeMeta = GOAL_TYPE_META[goal.type] || GOAL_TYPE_META.milestone;
   const isDone   = milestone?.is_done ?? false;
 
-  // ─── Milestone toggle ──────────────────────────────────────────────────
   const handleToggle = async () => {
     if (toggling) return;
     setToggling(true);
@@ -35,133 +23,199 @@ export default function GoalItem({
     setToggling(false);
   };
 
-  // ─── Progress % for cumulative goals ──────────────────────────────────
   const progressPct =
     goal.type === "cumulative" && goal.targetValue
       ? Math.min(100, Math.round((cumulativeVal / goal.targetValue) * 100))
       : null;
 
-  // ─── Tap handler — cumulative/daily/monthly open a sheet; milestone toggles
   const isTappable =
-    goal.type === "cumulative" || goal.type === "daily" || goal.type === "monthly";
+    goal.type === "cumulative" ||
+    goal.type === "daily"      ||
+    goal.type === "monthly";
+
+  const isMilestone = goal.type === "milestone";
+  const rowBg = isMilestone && isDone ? "#F0FAF4" : "#FFFFFF";
 
   return (
-    <div
-      className="flex items-start gap-3 px-5 py-4"
-      style={{ borderBottom: "1px solid var(--border)" }}
-    >
-      {/* Left — milestone checkbox or type indicator dot */}
-      <div className="flex-shrink-0 mt-0.5">
-        {goal.type === "milestone" ? (
+    <div style={{
+      background:   rowBg,
+      borderBottom: "1px solid #E8F0E8",
+      padding:      "14px 16px",
+      display:      "flex",
+      alignItems:   "flex-start",
+      gap:          "12px",
+      transition:   "background 0.2s",
+    }}>
+
+      {/* ── Left: milestone toggle OR category dot ── */}
+      <div style={{ flexShrink: 0, marginTop: 2 }}>
+        {isMilestone ? (
           <button
             onClick={handleToggle}
             disabled={toggling}
-            className="w-6 h-6 flex items-center justify-center
-              rounded-full transition-all duration-200 active:scale-90"
             aria-label={isDone ? "Mark incomplete" : "Mark complete"}
+            style={{
+              width: 32, height: 32,
+              borderRadius: "50%",
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+            }}
           >
             {toggling ? (
-              <Loader2 size={20} className="animate-spin" style={{ color: accentColor }} />
+              <Loader2
+                size={22}
+                className="animate-spin"
+                style={{ color: accentColor }}
+              />
             ) : isDone ? (
-              <CheckCircle2 size={22} style={{ color: accentColor }} />
+              /* Filled check circle */
+              <svg width="28" height="28" viewBox="0 0 28 28">
+                <circle cx="14" cy="14" r="13" fill={accentColor} />
+                <polyline
+                  points="8,14 12,18 20,10"
+                  fill="none"
+                  stroke="#FFFFFF"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             ) : (
-              <Circle size={22} style={{ color: "var(--border)" }} />
+              /* Empty ring */
+              <svg width="28" height="28" viewBox="0 0 28 28">
+                <circle
+                  cx="14" cy="14" r="12"
+                  fill="none"
+                  stroke="#C8D8C8"
+                  strokeWidth="2"
+                />
+              </svg>
             )}
           </button>
         ) : (
-          <div
-            className="w-2 h-2 rounded-full mt-1.5"
-            style={{ background: accentColor, opacity: 0.7 }}
-          />
+          /* Coloured dot for non-milestone types */
+          <div style={{
+            width: 9, height: 9,
+            borderRadius: "50%",
+            background: accentColor,
+            marginTop: 5,
+            opacity: 0.8,
+          }} />
         )}
       </div>
 
-      {/* Centre — title + type badge + progress bar */}
-      <div className="flex-1 min-w-0">
+      {/* ── Centre: title + badge + progress ── */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+
         {/* Title */}
-        <p
-          className={`text-sm leading-snug ${
-            isDone ? "line-through opacity-50" : ""
-          }`}
-          style={{
-            fontFamily: "Outfit, sans-serif",
-            color:      "var(--text)",
-          }}
-        >
+        <p style={{
+          margin: 0,
+          fontSize: 15,
+          fontWeight: isDone ? 400 : 500,
+          fontFamily: "Outfit, sans-serif",
+          color: isDone ? "#A0B8A0" : "#1C2B1C",
+          lineHeight: 1.35,
+          textDecoration: isDone ? "line-through" : "none",
+        }}>
           {goal.title}
         </p>
 
         {/* Type badge */}
-        <span
-          className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium"
-          style={{
-            background: typeMeta.bg,
-            color:      typeMeta.text,
-            fontFamily: "Outfit, sans-serif",
-          }}
-        >
+        <span style={{
+          display: "inline-block",
+          marginTop: 5,
+          padding: "2px 9px",
+          borderRadius: 20,
+          fontSize: 10,
+          fontWeight: 600,
+          fontFamily: "Outfit, sans-serif",
+          letterSpacing: "0.05em",
+          textTransform: "uppercase",
+          background: typeMeta.bg,
+          color: typeMeta.text,
+        }}>
           {typeMeta.label}
         </span>
 
         {/* Cumulative progress bar */}
         {progressPct !== null && (
-          <div className="mt-2">
-            <div
-              className="flex items-center justify-between mb-1"
-              style={{ fontFamily: "Outfit, sans-serif" }}
-            >
-              <span className="text-xs" style={{ color: "var(--muted)" }}>
-                {cumulativeVal} / {goal.targetValue}{" "}
-                {goal.unit}
+          <div style={{ marginTop: 9 }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 4,
+              fontFamily: "Outfit, sans-serif",
+            }}>
+              <span style={{ fontSize: 11, color: "#7A8F7A" }}>
+                {cumulativeVal} / {goal.targetValue} {goal.unit}
               </span>
-              <span
-                className="text-xs font-semibold"
-                style={{ color: accentColor }}
-              >
+              <span style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: progressPct >= 100 ? "#2E7D52" : accentColor,
+              }}>
                 {progressPct}%
               </span>
             </div>
-            <div
-              className="h-1.5 rounded-full overflow-hidden"
-              style={{ background: "var(--border)" }}
-            >
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width:      `${progressPct}%`,
-                  background: accentColor,
-                }}
-              />
+            {/* Track */}
+            <div style={{
+              height: 6,
+              borderRadius: 6,
+              background: "#E8F0E8",
+              overflow: "hidden",
+            }}>
+              {/* Fill */}
+              <div style={{
+                height: "100%",
+                borderRadius: 6,
+                background: progressPct >= 100 ? "#2E7D52" : accentColor,
+                width: `${progressPct}%`,
+                transition: "width 0.5s ease",
+              }} />
             </div>
           </div>
         )}
 
         {/* Milestone done date */}
-        {goal.type === "milestone" && isDone && milestone?.completed_date && (
-          <p
-            className="mt-1 text-xs"
-            style={{ color: "var(--muted)", fontFamily: "Outfit, sans-serif" }}
-          >
-            ✓ Done{" "}
-            {new Date(milestone.completed_date).toLocaleDateString("en-IN", {
-              day:   "numeric",
-              month: "short",
-              year:  "numeric",
+        {isMilestone && isDone && milestone?.completed_date && (
+          <p style={{
+            margin: "5px 0 0",
+            fontSize: 11,
+            fontFamily: "Outfit, sans-serif",
+            color: "#7A9E7E",
+          }}>
+            ✓ Done {new Date(milestone.completed_date).toLocaleDateString("en-IN", {
+              day: "numeric", month: "short", year: "numeric",
             })}
           </p>
         )}
       </div>
 
-      {/* Right — chevron for tappable tracked goals */}
+      {/* ── Right: chevron for tappable goals ── */}
       {isTappable && (
         <button
           onClick={onTapTracked}
-          className="flex-shrink-0 w-7 h-7 flex items-center justify-center
-            rounded-full transition-colors duration-150"
-          style={{ color: "var(--muted)" }}
           aria-label="View details"
+          style={{
+            flexShrink: 0,
+            width: 30, height: 30,
+            borderRadius: "50%",
+            border: "none",
+            background: "#F0F4F0",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#7A8F7A",
+            marginTop: 2,
+          }}
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={15} />
         </button>
       )}
     </div>
