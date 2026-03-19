@@ -60,6 +60,31 @@ export function useDailyLogs(userId) {
   }, [userId]);
 
   /**
+ * Fetch ALL logs for the user (for computing total averages).
+ * Returns array of all rows.
+ */
+const fetchAll = useCallback(async () => {
+  if (!userId) return [];
+  setLoading(true);
+  setError(null);
+  try {
+    const { data, error } = await supabase
+      .from('daily_logs')
+      .select('*')
+      .eq('user_id', userId)
+      .order('log_date', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    setError(err.message);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+}, [userId]);
+
+  /**
    * Save (insert or update) a log for a given date.
    * Uses upsert with onConflict on (user_id, log_date).
    * Returns the saved row or null on error.
@@ -94,5 +119,6 @@ export function useDailyLogs(userId) {
     }
   }, [userId]);
 
-  return { fetchByDate, fetchRange, saveLog, loading, error };
+  
+  return { fetchByDate, fetchRange, fetchAll, saveLog, loading, error };
 }

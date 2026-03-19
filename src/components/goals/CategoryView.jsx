@@ -16,6 +16,7 @@ export default function CategoryView({
   milestones = {},
   cumulativeMap = {},
   onToggle,
+  summaryMap = {},
   onTapTracked,
 }) {
   if (!category) return null;
@@ -59,13 +60,14 @@ export default function CategoryView({
           milestone={milestones[goal.id]}
           cumulativeVal={cumulativeMap[goal.id] ?? 0}
           onToggle={onToggle}
+          summaryMap={summaryMap}
           onTapTracked={() => onTapTracked?.(goal)}
           accentColor={category.color}
         />
       ))}
 
       {/* Bottom padding so last item clears the nav bar */}
-      <div className="h-6" />
+      <div style={{ height: 80 }} />
     </div>
   );
 }

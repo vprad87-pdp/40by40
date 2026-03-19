@@ -7,6 +7,7 @@ export default function MilestoneItem({
   goal,
   milestone,
   cumulativeVal = 0,
+  summaryMap = {},
   onToggle,
   onTapTracked,
   accentColor = "#7A9E7E",
@@ -28,13 +29,17 @@ export default function MilestoneItem({
       ? Math.min(100, Math.round((cumulativeVal / goal.targetValue) * 100))
       : null;
 
-  const isTappable =
-    goal.type === "cumulative" ||
-    goal.type === "daily"      ||
-    goal.type === "monthly";
+  // Only Books and Articles get a chevron arrow
+  const hasArrow = goal.id === "books" || goal.id === "articles";
+
+  // Soft version of accent colour for the dot
+  const dotColor = accentColor + "99"; // 60% opacity via hex alpha
 
   const isMilestone = goal.type === "milestone";
   const rowBg = isMilestone && isDone ? "#F0FAF4" : "#FFFFFF";
+
+  // Summary text for daily goals
+  const summaryText = summaryMap[goal.id] ?? null;
 
   return (
     <div style={{
@@ -47,7 +52,7 @@ export default function MilestoneItem({
       transition:   "background 0.2s",
     }}>
 
-      {/* ── Left: milestone toggle OR category dot ── */}
+      {/* Left: milestone toggle OR soft dot */}
       <div style={{ flexShrink: 0, marginTop: 2 }}>
         {isMilestone ? (
           <button
@@ -67,49 +72,35 @@ export default function MilestoneItem({
             }}
           >
             {toggling ? (
-              <Loader2
-                size={22}
-                className="animate-spin"
-                style={{ color: accentColor }}
-              />
+              <Loader2 size={22} className="animate-spin"
+                style={{ color: accentColor }} />
             ) : isDone ? (
-              /* Filled check circle */
               <svg width="28" height="28" viewBox="0 0 28 28">
                 <circle cx="14" cy="14" r="13" fill={accentColor} />
-                <polyline
-                  points="8,14 12,18 20,10"
-                  fill="none"
-                  stroke="#FFFFFF"
+                <polyline points="8,14 12,18 20,10"
+                  fill="none" stroke="#FFFFFF"
                   strokeWidth="2.5"
                   strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                  strokeLinejoin="round" />
               </svg>
             ) : (
-              /* Empty ring */
               <svg width="28" height="28" viewBox="0 0 28 28">
-                <circle
-                  cx="14" cy="14" r="12"
-                  fill="none"
-                  stroke="#C8D8C8"
-                  strokeWidth="2"
-                />
+                <circle cx="14" cy="14" r="12"
+                  fill="none" stroke="#C8D8C8" strokeWidth="2" />
               </svg>
             )}
           </button>
         ) : (
-          /* Coloured dot for non-milestone types */
           <div style={{
             width: 9, height: 9,
             borderRadius: "50%",
-            background: accentColor,
+            background: dotColor,
             marginTop: 5,
-            opacity: 0.8,
           }} />
         )}
       </div>
 
-      {/* ── Centre: title + badge + progress ── */}
+      {/* Centre: title + badge + summary/progress */}
       <div style={{ flex: 1, minWidth: 0 }}>
 
         {/* Title */}
@@ -142,6 +133,19 @@ export default function MilestoneItem({
           {typeMeta.label}
         </span>
 
+        {/* Daily/monthly summary chip */}
+        {summaryText && (
+          <div style={{
+            marginTop: 7,
+            fontSize: 12,
+            fontFamily: "Outfit, sans-serif",
+            color: "#7A8F7A",
+            fontWeight: 500,
+          }}>
+            {summaryText}
+          </div>
+        )}
+
         {/* Cumulative progress bar */}
         {progressPct !== null && (
           <div style={{ marginTop: 9 }}>
@@ -155,24 +159,18 @@ export default function MilestoneItem({
                 {cumulativeVal} / {goal.targetValue} {goal.unit}
               </span>
               <span style={{
-                fontSize: 11,
-                fontWeight: 700,
+                fontSize: 11, fontWeight: 700,
                 color: progressPct >= 100 ? "#2E7D52" : accentColor,
               }}>
                 {progressPct}%
               </span>
             </div>
-            {/* Track */}
             <div style={{
-              height: 6,
-              borderRadius: 6,
-              background: "#E8F0E8",
-              overflow: "hidden",
+              height: 6, borderRadius: 6,
+              background: "#E8F0E8", overflow: "hidden",
             }}>
-              {/* Fill */}
               <div style={{
-                height: "100%",
-                borderRadius: 6,
+                height: "100%", borderRadius: 6,
                 background: progressPct >= 100 ? "#2E7D52" : accentColor,
                 width: `${progressPct}%`,
                 transition: "width 0.5s ease",
@@ -184,10 +182,8 @@ export default function MilestoneItem({
         {/* Milestone done date */}
         {isMilestone && isDone && milestone?.completed_date && (
           <p style={{
-            margin: "5px 0 0",
-            fontSize: 11,
-            fontFamily: "Outfit, sans-serif",
-            color: "#7A9E7E",
+            margin: "5px 0 0", fontSize: 11,
+            fontFamily: "Outfit, sans-serif", color: "#7A9E7E",
           }}>
             ✓ Done {new Date(milestone.completed_date).toLocaleDateString("en-IN", {
               day: "numeric", month: "short", year: "numeric",
@@ -196,8 +192,8 @@ export default function MilestoneItem({
         )}
       </div>
 
-      {/* ── Right: chevron for tappable goals ── */}
-      {isTappable && (
+      {/* Right: arrow only for Books and Articles */}
+      {hasArrow && (
         <button
           onClick={onTapTracked}
           aria-label="View details"

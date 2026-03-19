@@ -1,27 +1,62 @@
 // src/screens/GoalsScreen.jsx
-import { useState, useMemo } from "react";
-import { Target } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import { CATEGORIES, ALL_GOALS, TOTAL_GOALS } from "../../constants/goals";
 import { useMilestones } from "../../hooks/useMilestones";
+import { useDailyLogs } from "../../hooks/useDailyLogs";
+import { useAuth } from "../../hooks/useAuth";
 import BottomSheet from "../layout/BottomSheet";
 import CategoryView from "../goals/CategoryView";
 
 export default function GoalsScreen() {
+  const { user } = useAuth();
   const { milestones, loading, toggleMilestone } = useMilestones();
+  const { fetchAll } = useDailyLogs(user?.id);
   const [activeCategory, setActiveCategory] = useState(null);
+  const [allLogs, setAllLogs] = useState([]);
+
+  useEffect(() => {
+    if (user?.id) fetchAll().then(setAllLogs);
+  }, [user?.id]);
+
+  const dailyAverages = useMemo(() => {
+    if (!allLogs.length) return { mobile_mins: null, social_mins: null };
+    const withMobile = allLogs.filter(l => l.mobile_mins !== null);
+    const withSocial = allLogs.filter(l => l.social_mins !== null);
+    return {
+      mobile_mins: withMobile.length
+        ? Math.round(withMobile.reduce((s, l) => s + l.mobile_mins, 0) / withMobile.length)
+        : null,
+      social_mins: withSocial.length
+        ? Math.round(withSocial.reduce((s, l) => s + l.social_mins, 0) / withSocial.length)
+        : null,
+    };
+  }, [allLogs]);
+
+  const formatMins = (mins) => {
+    if (mins === null) return "No data yet";
+    if (mins >= 60) return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+    return `${mins}m`;
+  };
+
+  const summaryMap = useMemo(() => ({
+    mobile_usage: dailyAverages.mobile_mins !== null
+      ? `Avg ${formatMins(dailyAverages.mobile_mins)} / day`
+      : "No data yet",
+    social_media: dailyAverages.social_mins !== null
+      ? `Avg ${formatMins(dailyAverages.social_mins)} / day`
+      : "No data yet",
+  }), [dailyAverages]);
 
   const categoryStats = useMemo(() => {
     return CATEGORIES.map((cat) => {
-      const milestoneGoals  = cat.goals.filter((g) => g.type === "milestone");
-      const totalMilestones = milestoneGoals.length;
-      const doneMilestones  = milestoneGoals.filter(
+      const milestoneGoals = cat.goals.filter((g) => g.type === "milestone");
+      const doneMilestones = milestoneGoals.filter(
         (g) => milestones[g.id]?.is_done
       ).length;
-      const pct =
-        cat.goals.length > 0
-          ? Math.round((doneMilestones / cat.goals.length) * 100)
-          : 0;
-      return { id: cat.id, totalMilestones, doneMilestones, pct };
+      const pct = cat.goals.length > 0
+        ? Math.round((doneMilestones / cat.goals.length) * 100)
+        : 0;
+      return { id: cat.id, doneMilestones, pct };
     });
   }, [milestones]);
 
@@ -37,47 +72,52 @@ export default function GoalsScreen() {
     ).length;
   }, [milestones]);
 
-  const handleOpenCategory = (cat) => setActiveCategory(cat);
-  const handleClose        = () => setActiveCategory(null);
-  const handleToggle       = async (goalId, isDone) => {
+  const handleToggle = async (goalId, isDone) => {
     await toggleMilestone(goalId, isDone);
-  };
-  const handleTapTracked   = (goal) => {
-    console.log("Tapped tracked goal:", goal.id);
   };
 
   return (
-    <div
-      className="flex flex-col min-h-full"
-      style={{ background: "#F0F4F0", fontFamily: "Outfit, sans-serif" }}
-    >
+    <div style={{
+      minHeight: "100%",
+      background: "#F0F4F0",
+      fontFamily: "Outfit, sans-serif",
+    }}>
+
       {/* Header */}
-      <div
-        className="px-5 pt-12 pb-5"
-        style={{ background: "#FFFFFF", borderBottom: "1px solid #D8E4D8" }}
-      >
-        <div className="flex items-center gap-2 mb-1">
-          <Target size={18} style={{ color: "#B8860B" }} />
-          <h1
-            className="text-xl font-semibold"
-            style={{ fontFamily: "Lora, serif", color: "#3D2B1F" }}
-          >
+      <div style={{
+        background: "#FFFFFF",
+        borderBottom: "1px solid #D8E4D8",
+        padding: "48px 20px 20px",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <span style={{ fontSize: 20 }}>🎯</span>
+          <h1 style={{
+            fontFamily: "Lora, serif",
+            fontSize: 22,
+            fontWeight: 600,
+            color: "#3D2B1F",
+            margin: 0,
+          }}>
             Goals
           </h1>
         </div>
-        <p className="text-sm" style={{ color: "#7A8F7A" }}>
+        <p style={{ fontSize: 13, color: "#7A8F7A", margin: 0 }}>
           {TOTAL_GOALS} goals · 7 categories
           {!loading && totalMilestoneDone > 0 && (
             <span style={{ color: "#2E7D52" }}>
-              {" "}· {totalMilestoneDone} milestone{totalMilestoneDone !== 1 ? "s" : ""} done
+              {" "}· {totalMilestoneDone} done
             </span>
           )}
         </p>
       </div>
 
-      {/* Category grid */}
-      <div className="flex-1 px-4 py-4">
-        <div className="grid grid-cols-2 gap-3">
+      {/* Category grid — pure CSS grid, no Tailwind */}
+      <div style={{ padding: "16px 16px 100px" }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 12,
+        }}>
           {CATEGORIES.map((cat) => {
             const stats   = statsMap[cat.id];
             const pct     = stats?.pct ?? 0;
@@ -88,57 +128,88 @@ export default function GoalsScreen() {
             return (
               <button
                 key={cat.id}
-                onClick={() => handleOpenCategory(cat)}
-                className={`text-left rounded-2xl p-4 transition-all duration-200
-                  active:scale-95 ${isLarge ? "col-span-2" : ""}`}
+                onClick={() => setActiveCategory(cat)}
                 style={{
-                  background: cat.colorLight,
-                  border:     `1.5px solid ${cat.colorBorder}`,
+                  gridColumn:    isLarge ? "1 / -1" : "auto",
+                  textAlign:     "left",
+                  background:    cat.colorLight,
+                  border:        `1.5px solid ${cat.colorBorder}`,
+                  borderRadius:  16,
+                  padding:       "14px 14px 12px",
+                  cursor:        "pointer",
+                  transition:    "transform 0.15s",
+                  outline:       "none",
+                  WebkitTapHighlightColor: "transparent",
                 }}
+                onMouseDown={e => e.currentTarget.style.transform = "scale(0.96)"}
+                onMouseUp={e   => e.currentTarget.style.transform = "scale(1)"}
+                onTouchStart={e => e.currentTarget.style.transform = "scale(0.96)"}
+                onTouchEnd={e   => e.currentTarget.style.transform = "scale(1)"}
               >
-                {/* Emoji + count badge */}
-                <div className="flex items-start justify-between mb-2">
-                  <span className="text-2xl leading-none">{cat.emoji}</span>
-                  <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-full"
-                    style={{ background: cat.colorBorder, color: cat.color }}
-                  >
+                {/* Top row: emoji + count badge */}
+                <div style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  marginBottom: 8,
+                }}>
+                  <span style={{ fontSize: 24, lineHeight: 1 }}>{cat.emoji}</span>
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "2px 8px",
+                    borderRadius: 20,
+                    background: cat.colorBorder,
+                    color: cat.color,
+                    fontFamily: "Outfit, sans-serif",
+                  }}>
                     {total}
                   </span>
                 </div>
 
                 {/* Category name */}
-                <p
-                  className="text-sm font-semibold leading-tight mb-3"
-                  style={{ fontFamily: "Lora, serif", color: "#3D2B1F" }}
-                >
+                <p style={{
+                  fontFamily: "Lora, serif",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#3D2B1F",
+                  margin: "0 0 10px",
+                  lineHeight: 1.3,
+                }}>
                   {cat.label}
                 </p>
 
-                {/* Progress bar — CHANGE 1: height 5px instead of 1.5px */}
-                <div>
-                  <div
-                    className="rounded-full overflow-hidden mb-1"
-                    style={{
-                      height:     5,
-                      background: cat.colorBorder,
-                    }}
-                  >
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{ width: `${pct}%`, background: cat.color }}
-                    />
-                  </div>
-
-                  {/* CHANGE 2: show "X done · Y goals" instead of "Not started" */}
-                  <p className="text-xs" style={{ color: "#7A8F7A" }}>
-                    {loading
-                      ? "Loading…"
-                      : done > 0
-                      ? `${done} done · ${total} goals`
-                      : `${total} goals`}
-                  </p>
+                {/* Progress bar — track always visible */}
+                <div style={{
+                  height: 5,
+                  borderRadius: 5,
+                  background: cat.colorBorder,
+                  overflow: "hidden",
+                  marginBottom: 6,
+                }}>
+                  <div style={{
+                    height: "100%",
+                    borderRadius: 5,
+                    background: cat.color,
+                    width: `${pct}%`,
+                    transition: "width 0.7s ease",
+                    minWidth: pct > 0 ? 4 : 0,
+                  }} />
                 </div>
+
+                {/* Status text */}
+                <p style={{
+                  fontSize: 11,
+                  color: "#7A8F7A",
+                  margin: 0,
+                  fontFamily: "Outfit, sans-serif",
+                }}>
+                  {loading
+                    ? "Loading…"
+                    : done > 0
+                    ? `${done} done · ${total} goals`
+                    : `${total} goals`}
+                </p>
               </button>
             );
           })}
@@ -148,7 +219,7 @@ export default function GoalsScreen() {
       {/* Bottom sheet */}
       <BottomSheet
         isOpen={!!activeCategory}
-        onClose={handleClose}
+        onClose={() => setActiveCategory(null)}
         title={activeCategory?.label ?? ""}
         emoji={activeCategory?.emoji}
         accentColor={activeCategory?.color}
@@ -158,8 +229,8 @@ export default function GoalsScreen() {
             category={activeCategory}
             milestones={milestones}
             cumulativeMap={{}}
+            summaryMap={summaryMap}
             onToggle={handleToggle}
-            onTapTracked={handleTapTracked}
           />
         )}
       </BottomSheet>
