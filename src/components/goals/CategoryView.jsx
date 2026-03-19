@@ -53,7 +53,7 @@ export default function CategoryView({
 
       {/* Goal rows */}
       {category.goals.map((goal) => (
-        <GoalItem
+        <MilestoneItem
           key={goal.id}
           goal={goal}
           milestone={milestones[goal.id]}

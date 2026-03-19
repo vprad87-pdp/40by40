@@ -9,6 +9,8 @@ import HistoryScreen from './components/screens/HistoryScreen'
 import MonthlyCheckin from './components/modals/MonthlyCheckin'
 import { useMonthlyData } from './hooks/useMonthlyData'
 import DashboardScreen from './components/screens/DashboardScreen'
+import BooksScreen from './components/screens/BooksScreen';
+import ArticlesScreen from './components/screens/ArticlesScreen';
 
 const TABS = [
   { id: 'home',      label: 'Home',      emoji: '🏠' },
@@ -21,7 +23,7 @@ const TABS = [
 function App() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
   const { shouldShowModal, saveCheckin, snoozeCheckin } = useMonthlyData(user?.id)
-  const [activeTab, setActiveTab]   = useState('home')
+  const [activeTab, setActiveTab]   = useState('articles')
   const [goalFilter, setGoalFilter] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -70,7 +72,12 @@ function App() {
       case 'history':
         return <HistoryScreen />
         case 'dashboard':
+          
   return <DashboardScreen />
+  case 'books':
+  return <BooksScreen />;
+  case 'articles':
+  return <ArticlesScreen />;
       default:
         return <HomeScreen user={user} onBucketTap={handleBucketTap} />
     }
