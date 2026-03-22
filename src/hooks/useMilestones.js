@@ -2,18 +2,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../supabase";
 
-
-/**
- * Fetches all milestone rows for the current user and exposes a toggle function.
- * Returns a map: { [goal_id]: { is_done, notes, completed_date } }
- */
 export function useMilestones(user) {
-  
-  const [milestones, setMilestones] = useState({}); // keyed by goal_id string
+  const [milestones, setMilestones] = useState({});
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
 
-  // ─── Fetch all milestones for this user ──────────────────────────────────
   const fetchMilestones = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -21,35 +14,38 @@ export function useMilestones(user) {
 
     const { data, error: fetchError } = await supabase
       .from("milestones")
-      .select("goal_id, is_done, notes, completed_date, updated_at")
+      .select("goal_id, is_done, notes, completed_date, updated_at, progress_pct")
       .eq("user_id", user.id);
 
     if (fetchError) {
       setError(fetchError.message);
     } else {
-      // Build a lookup map keyed by goal_id
       const map = {};
-      (data || []).forEach((row) => {
-        map[row.goal_id] = row;
-      });
+      (data || []).forEach((row) => { map[row.goal_id] = row; });
       setMilestones(map);
     }
     setLoading(false);
   }, [user]);
 
-  useEffect(() => {
-    fetchMilestones();
-  }, [fetchMilestones]);
+  useEffect(() => { fetchMilestones();
+    // Refetch when user comes back to this tab
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        setTimeout(() => fetchMilestones(), 300);
+      }
+    }
 
-  // ─── Toggle a single milestone ───────────────────────────────────────────
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  
+   }, [fetchMilestones]);
+
   const toggleMilestone = useCallback(
     async (goalId, currentDone, notes = "") => {
       if (!user) return { error: "Not authenticated" };
-
       const newDone = !currentDone;
       const today = new Date().toISOString().split("T")[0];
 
-      // Optimistic update
       setMilestones((prev) => ({
         ...prev,
         [goalId]: {
@@ -61,7 +57,6 @@ export function useMilestones(user) {
         },
       }));
 
-      // Upsert to Supabase (insert or update by user_id + goal_id)
       const { error: upsertError } = await supabase
         .from("milestones")
         .upsert(
@@ -77,35 +72,25 @@ export function useMilestones(user) {
         );
 
       if (upsertError) {
-        // Rollback optimistic update on failure
         setMilestones((prev) => ({
           ...prev,
           [goalId]: {
             ...prev[goalId],
             is_done:        currentDone,
-            completed_date: currentDone
-              ? prev[goalId]?.completed_date
-              : null,
+            completed_date: currentDone ? prev[goalId]?.completed_date : null,
           },
         }));
         return { error: upsertError.message };
       }
-
       return { error: null };
     },
     [user, milestones]
   );
 
-  // ─── Save notes for a milestone (e.g. course name) ───────────────────────
   const saveMilestoneNotes = useCallback(
     async (goalId, notes) => {
       if (!user) return { error: "Not authenticated" };
-
-      setMilestones((prev) => ({
-        ...prev,
-        [goalId]: { ...prev[goalId], notes },
-      }));
-
+      setMilestones((prev) => ({ ...prev, [goalId]: { ...prev[goalId], notes } }));
       const { error: updateError } = await supabase
         .from("milestones")
         .upsert(
@@ -118,10 +103,48 @@ export function useMilestones(user) {
           },
           { onConflict: "user_id,goal_id" }
         );
-
       return { error: updateError?.message || null };
     },
     [user, milestones]
+  );
+
+  const saveFuzzyProgress = useCallback(
+    async (goalId, pct, note, isDone) => {
+      console.log('saveFuzzyProgress user:', user?.id) 
+      if (!user) return { error: "Not authenticated" };
+      console.log('saveFuzzyProgress called:', goalId, pct, note, isDone)
+      const today = new Date().toISOString().split("T")[0];
+
+      // Optimistic update
+      setMilestones((prev) => ({
+        ...prev,
+        [goalId]: {
+          ...prev[goalId],
+          progress_pct:   pct,
+          notes:          note,
+          is_done:        isDone,
+          completed_date: isDone ? today : null,
+        },
+      }));
+
+      const { error: upsertError } = await supabase
+        .from("milestones")
+        .upsert(
+          {
+            user_id:        user.id,
+            goal_id:        goalId,
+            progress_pct:   pct,
+            notes:          note,
+            is_done:        isDone,
+            completed_date: isDone ? today : null,
+            updated_at:     new Date().toISOString(),
+          },
+          { onConflict: "user_id,goal_id" }
+        );
+
+      return { error: upsertError?.message || null };
+    },
+    [user]
   );
 
   return {
@@ -130,6 +153,7 @@ export function useMilestones(user) {
     error,
     toggleMilestone,
     saveMilestoneNotes,
+    saveFuzzyProgress,
     refetch: fetchMilestones,
   };
 }

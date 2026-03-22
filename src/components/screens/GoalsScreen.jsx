@@ -9,10 +9,17 @@ import CategoryView from "../goals/CategoryView";
 
 export default function GoalsScreen({ goalFilter, onNavigate, user }) {
   
-    const { milestones, loading, toggleMilestone } = useMilestones(user);
+    const { milestones, loading, toggleMilestone, saveFuzzyProgress, refetch } = useMilestones(user);
+    console.log('GoalsScreen user:', user?.id, 'milestones:', milestones)
   const { fetchAll } = useDailyLogs(user?.id);
   const [activeCategory, setActiveCategory] = useState(null);
   const [allLogs, setAllLogs] = useState([]);
+
+  const handleCategoryOpen = async (cat) => {
+  await refetch();  // wait for fresh data first
+  console.log('milestones after refetch:', milestones['kannada']);
+  setActiveCategory(cat);  // then open the sheet
+}
 
   useEffect(() => {
     if (user?.id) fetchAll().then(setAllLogs);
@@ -128,7 +135,7 @@ export default function GoalsScreen({ goalFilter, onNavigate, user }) {
             return (
               <button
                 key={cat.id}
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => handleCategoryOpen(cat)}
                 style={{
                   gridColumn:    isLarge ? "1 / -1" : "auto",
                   textAlign:     "left",
@@ -231,6 +238,7 @@ export default function GoalsScreen({ goalFilter, onNavigate, user }) {
   cumulativeMap={{}}
   summaryMap={summaryMap}
   onToggle={handleToggle}
+  onSaveFuzzy={saveFuzzyProgress}
   onTapTracked={(goal) => {
     setActiveCategory(null);
     onNavigate?.(goal.id);

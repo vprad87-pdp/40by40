@@ -18,6 +18,7 @@ export default function CategoryView({
   onToggle,
   summaryMap = {},
   onTapTracked,
+  onSaveFuzzy,
 }) {
   if (!category) return null;
 
@@ -62,6 +63,7 @@ export default function CategoryView({
           onToggle={onToggle}
           summaryMap={summaryMap}
           onTapTracked={() => onTapTracked?.(goal)}
+          onSaveFuzzy={onSaveFuzzy}
           accentColor={category.color}
         />
       ))}

@@ -139,6 +139,7 @@ export default function BottomSheet({
           overflowY:              "auto",
           WebkitOverflowScrolling:"touch",
           overscrollBehavior:     "contain",
+          paddingBottom:          80,
         }}>
           {children}
         </div>
@@ -147,7 +148,7 @@ export default function BottomSheet({
         {footer && (
           <div style={{
             flexShrink:   0,
-            padding:      "12px 16px 24px",
+            padding:      "12px 16px 72px",
             borderTop:    "1px solid #E8F0E8",
             background:   "#FFFFFF",
           }}>

@@ -99,6 +99,7 @@ export const CATEGORIES = [
         title: "Learn to speak Kannada",
         type: "milestone",
         table: "milestones",
+        fuzzy: true,
       },
       {
         id: "cooking",
@@ -106,6 +107,7 @@ export const CATEGORIES = [
         title: "Learn to cook Rasam and Potato",
         type: "milestone",
         table: "milestones",
+        fuzzy: true,
       },
       {
         id: "chess_carrom",
@@ -113,6 +115,7 @@ export const CATEGORIES = [
         title: "Teach Chess/Carrom to Vaibhav",
         type: "milestone",
         table: "milestones",
+         fuzzy: true, 
       },
       {
         id: "tech_projects",
@@ -120,6 +123,7 @@ export const CATEGORIES = [
         title: "3 Technology projects like this",
         type: "milestone",
         table: "milestones",
+         fuzzy: true,
       },
     ],
   },
