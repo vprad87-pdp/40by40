@@ -66,7 +66,7 @@ function App() {
       case 'home':
         return <HomeScreen user={user} onBucketTap={handleBucketTap} />
       case 'goals':
-        return <GoalsScreen goalFilter={goalFilter} />
+        return <GoalsScreen goalFilter={goalFilter} onNavigate={setActiveTab} />
       case 'log':
         return <LogScreen user={user} />
       case 'history':

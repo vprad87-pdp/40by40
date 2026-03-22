@@ -7,7 +7,7 @@ import { useAuth } from "../../hooks/useAuth";
 import BottomSheet from "../layout/BottomSheet";
 import CategoryView from "../goals/CategoryView";
 
-export default function GoalsScreen() {
+export default function GoalsScreen({ goalFilter, onNavigate }) {
   const { user } = useAuth();
   const { milestones, loading, toggleMilestone } = useMilestones();
   const { fetchAll } = useDailyLogs(user?.id);
@@ -226,12 +226,16 @@ export default function GoalsScreen() {
       >
         {activeCategory && (
           <CategoryView
-            category={activeCategory}
-            milestones={milestones}
-            cumulativeMap={{}}
-            summaryMap={summaryMap}
-            onToggle={handleToggle}
-          />
+  category={activeCategory}
+  milestones={milestones}
+  cumulativeMap={{}}
+  summaryMap={summaryMap}
+  onToggle={handleToggle}
+  onTapTracked={(goal) => {
+    setActiveCategory(null);
+    onNavigate?.(goal.id);
+  }}
+/>
         )}
       </BottomSheet>
     </div>

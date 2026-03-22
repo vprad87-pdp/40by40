@@ -6,19 +6,19 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get current session on load
+    // Check for existing session first
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    // Listen for login/logout changes
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         const currentUser = session?.user ?? null
         setUser(currentUser)
+        setLoading(false)  // ← always set loading false on any auth event
 
-        // Auto-create profile row on first login
         if (event === 'SIGNED_IN' && currentUser) {
           await supabase.from('profiles').upsert({
             id: currentUser.id,
@@ -36,14 +36,13 @@ export function useAuth() {
   const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin
-      }
+      options: { redirectTo: window.location.origin }
     })
   }
 
   const signOut = async () => {
     await supabase.auth.signOut()
+    setUser(null)
   }
 
   return { user, loading, signInWithGoogle, signOut }
