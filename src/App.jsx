@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useState, useEffect } from 'react'
 import { useAuth } from './hooks/useAuth'
 import LoginScreen from './components/screens/LoginScreen'
@@ -9,8 +8,8 @@ import HistoryScreen from './components/screens/HistoryScreen'
 import MonthlyCheckin from './components/modals/MonthlyCheckin'
 import { useMonthlyData } from './hooks/useMonthlyData'
 import DashboardScreen from './components/screens/DashboardScreen'
-import BooksScreen from './components/screens/BooksScreen';
-import ArticlesScreen from './components/screens/ArticlesScreen';
+import BooksScreen from './components/screens/BooksScreen'
+import ArticlesScreen from './components/screens/ArticlesScreen'
 
 const TABS = [
   { id: 'home',      label: 'Home',      emoji: '🏠' },
@@ -23,13 +22,13 @@ const TABS = [
 function App() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
   const { shouldShowModal, saveCheckin, snoozeCheckin } = useMonthlyData(user?.id)
-  const [activeTab, setActiveTab]   = useState('articles')
-  const [goalFilter, setGoalFilter] = useState(null)
+  const [activeTab, setActiveTab]     = useState('home')
+  const [goalFilter, setGoalFilter]   = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
-  if (shouldShowModal) setIsModalOpen(true)
-}, [shouldShowModal])
+    if (shouldShowModal) setIsModalOpen(true)
+  }, [shouldShowModal])
 
   function handleBucketTap(bucketKey) {
     setGoalFilter(bucketKey)
@@ -61,33 +60,33 @@ function App() {
     return <LoginScreen onSignIn={signInWithGoogle} />
   }
 
-  function renderScreen() {
-    switch (activeTab) {
-      case 'home':
-        return <HomeScreen user={user} onBucketTap={handleBucketTap} />
-      case 'goals':
-        return <GoalsScreen goalFilter={goalFilter} onNavigate={setActiveTab} />
-      case 'log':
-        return <LogScreen user={user} />
-      case 'history':
-        return <HistoryScreen />
-        case 'dashboard':
-          
-  return <DashboardScreen />
-  case 'books':
-  return <BooksScreen />;
-  case 'articles':
-  return <ArticlesScreen />;
-      default:
-        return <HomeScreen user={user} onBucketTap={handleBucketTap} />
-    }
-  }
-
   return (
     <div style={{ maxWidth: '480px', margin: '0 auto', position: 'relative' }}>
 
-      {/* Screen */}
-      {renderScreen()}
+      {/* All screens mounted, only one visible at a time */}
+      
+      <div style={{ display: activeTab === 'home' ? 'block' : 'none', minHeight: '100dvh' }}>
+  <HomeScreen user={user} onBucketTap={handleBucketTap} />
+</div>
+      
+      <div style={{ display: activeTab === 'goals' ? 'block' : 'none' }}>
+  {user && <GoalsScreen goalFilter={goalFilter} onNavigate={setActiveTab} user={user} />}
+</div>
+<div style={{ display: activeTab === 'log' ? 'block' : 'none' }}>
+  <LogScreen user={user} />
+</div>
+<div style={{ display: activeTab === 'history' ? 'block' : 'none' }}>
+  <HistoryScreen user={user} />
+</div>
+<div style={{ display: activeTab === 'dashboard' ? 'block' : 'none' }}>
+  <DashboardScreen user={user} />
+</div>
+<div style={{ display: activeTab === 'books' ? 'block' : 'none' }}>
+  {user && <BooksScreen />}
+</div>
+<div style={{ display: activeTab === 'articles' ? 'block' : 'none' }}>
+  {user && <ArticlesScreen />}
+</div>
 
       {/* Bottom Nav */}
       <nav style={{
@@ -146,12 +145,12 @@ function App() {
       </nav>
 
       {/* Monthly Check-in Modal */}
-     <MonthlyCheckin
-  isOpen={isModalOpen}
-  onClose={() => setIsModalOpen(false)}
-  onSave={saveCheckin}
-  onSnooze={snoozeCheckin}
-/>
+      <MonthlyCheckin
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={saveCheckin}
+        onSnooze={snoozeCheckin}
+      />
 
     </div>
   )

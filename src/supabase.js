@@ -9,5 +9,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storageKey: '40by40-auth',
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    lock: async (name, acquireTimeout, fn) => {
+      return fn()
+    }
   }
 })

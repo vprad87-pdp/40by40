@@ -6,8 +6,8 @@ import {
   Tooltip, ResponsiveContainer
 } from 'recharts'
 
-export default function DashboardScreen() {
-  const { data, loading } = useDashboardData()
+export default function DashboardScreen({user}) {
+  const { data, loading } = useDashboardData(user)
 
   if (loading) {
     return (

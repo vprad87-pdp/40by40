@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
-import { useAuth } from './useAuth'
 
-export function useDashboardData() {
-  const { user } = useAuth()
+export function useDashboardData(user) {  // ← accept user as param
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -15,7 +13,6 @@ export function useDashboardData() {
   async function fetchAll() {
     setLoading(true)
 
-    // 1. Walk total from daily_logs
     const { data: logs } = await supabase
       .from('daily_logs')
       .select('walk_km, mobile_mins, social_mins, log_date')
@@ -24,12 +21,10 @@ export function useDashboardData() {
 
     const walkTotal = logs?.reduce((sum, r) => sum + (parseFloat(r.walk_km) || 0), 0) || 0
 
-    // Last 30 days for screen time chart
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const recentLogs = logs?.filter(r => new Date(r.log_date) >= thirtyDaysAgo) || []
 
-    // 2. Books count
     const { count: booksCount } = await supabase
       .from('books')
       .select('*', { count: 'exact', head: true })
@@ -41,13 +36,11 @@ export function useDashboardData() {
       .eq('user_id', user.id)
       .eq('is_tamil', true)
 
-    // 3. Articles count
     const { count: articlesCount } = await supabase
       .from('articles')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
 
-    // 4. Latest monthly check-in for savings + cumulative fields
     const { data: checkins } = await supabase
       .from('monthly_checkins')
       .select('savings_inr, charity_inr, friends_met, notes_sent, zero_social_weeks, checkin_month')
@@ -76,7 +69,7 @@ export function useDashboardData() {
       notesTarget: 14,
       zeroSocialWeeks: latest.zero_social_weeks || 0,
       zeroSocialTarget: 4,
-      recentLogs: recentLogs.reverse(), // oldest first for chart
+      recentLogs: recentLogs.reverse(),
     })
 
     setLoading(false)

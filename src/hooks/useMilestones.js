@@ -1,14 +1,14 @@
 // src/hooks/useMilestones.js
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../supabase";
-import { useAuth } from "./useAuth";
+
 
 /**
  * Fetches all milestone rows for the current user and exposes a toggle function.
  * Returns a map: { [goal_id]: { is_done, notes, completed_date } }
  */
-export function useMilestones() {
-  const { user } = useAuth();
+export function useMilestones(user) {
+  
   const [milestones, setMilestones] = useState({}); // keyed by goal_id string
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);

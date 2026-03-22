@@ -2,29 +2,28 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 
 export function useAuth() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(undefined) // undefined = not yet known
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session first
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        const currentUser = session?.user ?? null
-        setUser(currentUser)
-        setLoading(false)  // ← always set loading false on any auth event
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'SIGNED_OUT') {
+          setUser(session?.user ?? null)
+          setLoading(false)
+        }
 
-        if (event === 'SIGNED_IN' && currentUser) {
+        if (event === 'SIGNED_IN' && session?.user) {
           await supabase.from('profiles').upsert({
-            id: currentUser.id,
-            email: currentUser.email,
-            display_name: currentUser.user_metadata?.full_name,
-            avatar_url: currentUser.user_metadata?.avatar_url,
+            id: session.user.id,
+            email: session.user.email,
+            display_name: session.user.user_metadata?.full_name,
+            avatar_url: session.user.user_metadata?.avatar_url,
           }, { onConflict: 'id' })
         }
       }

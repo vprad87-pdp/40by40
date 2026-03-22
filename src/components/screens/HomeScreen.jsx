@@ -233,6 +233,16 @@ export default function HomeScreen({ user, onBucketTap }) {
     )
   }
 
+  if (!data) {
+  return (
+    <div style={centeredStyle}>
+      <p style={{ fontFamily: 'Outfit, sans-serif', color: '#C0392B' }}>
+        No data. Please refresh.
+      </p>
+    </div>
+  )
+}
+
   if (error) {
     return (
       <div style={centeredStyle}>

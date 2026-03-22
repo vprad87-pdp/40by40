@@ -3,13 +3,13 @@ import { useState, useMemo, useEffect } from "react";
 import { CATEGORIES, ALL_GOALS, TOTAL_GOALS } from "../../constants/goals";
 import { useMilestones } from "../../hooks/useMilestones";
 import { useDailyLogs } from "../../hooks/useDailyLogs";
-import { useAuth } from "../../hooks/useAuth";
+
 import BottomSheet from "../layout/BottomSheet";
 import CategoryView from "../goals/CategoryView";
 
-export default function GoalsScreen({ goalFilter, onNavigate }) {
-  const { user } = useAuth();
-  const { milestones, loading, toggleMilestone } = useMilestones();
+export default function GoalsScreen({ goalFilter, onNavigate, user }) {
+  
+    const { milestones, loading, toggleMilestone } = useMilestones(user);
   const { fetchAll } = useDailyLogs(user?.id);
   const [activeCategory, setActiveCategory] = useState(null);
   const [allLogs, setAllLogs] = useState([]);
