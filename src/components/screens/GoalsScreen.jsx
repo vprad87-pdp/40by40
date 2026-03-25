@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { CATEGORIES, ALL_GOALS, TOTAL_GOALS } from "../../constants/goals";
 import { useMilestones } from "../../hooks/useMilestones";
 import { useDailyLogs } from "../../hooks/useDailyLogs";
+import { supabase } from '../../supabase'
 
 import BottomSheet from "../layout/BottomSheet";
 import CategoryView from "../goals/CategoryView";
@@ -14,6 +15,23 @@ export default function GoalsScreen({ goalFilter, onNavigate, user }) {
   const { fetchAll } = useDailyLogs(user?.id);
   const [activeCategory, setActiveCategory] = useState(null);
   const [allLogs, setAllLogs] = useState([]);
+
+  const [latestWeight, setLatestWeight] = useState(null)
+
+useEffect(() => {
+  if (!user?.id) return
+  supabase
+    .from('monthly_checkins')
+    .select('weight_kg')
+    .eq('user_id', user.id)
+    .not('weight_kg', 'is', null)
+    .order('checkin_month', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+    .then(({ data }) => {
+      if (data?.weight_kg) setLatestWeight(data.weight_kg)
+    })
+}, [user?.id])
 
   const handleCategoryOpen = async (cat) => {
   await refetch();  // wait for fresh data first
@@ -46,13 +64,16 @@ export default function GoalsScreen({ goalFilter, onNavigate, user }) {
   };
 
   const summaryMap = useMemo(() => ({
-    mobile_usage: dailyAverages.mobile_mins !== null
-      ? `Avg ${formatMins(dailyAverages.mobile_mins)} / day`
-      : "No data yet",
-    social_media: dailyAverages.social_mins !== null
-      ? `Avg ${formatMins(dailyAverages.social_mins)} / day`
-      : "No data yet",
-  }), [dailyAverages]);
+  mobile_usage: dailyAverages.mobile_mins !== null
+    ? `Avg ${formatMins(dailyAverages.mobile_mins)} / day`
+    : "No data yet",
+  social_media: dailyAverages.social_mins !== null
+    ? `Avg ${formatMins(dailyAverages.social_mins)} / day`
+    : "No data yet",
+  weight: latestWeight !== null
+    ? `Current: ${latestWeight} kg`
+    : "Not logged yet",
+}), [dailyAverages, latestWeight]);
 
   const categoryStats = useMemo(() => {
     return CATEGORIES.map((cat) => {

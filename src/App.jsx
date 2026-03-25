@@ -21,7 +21,7 @@ const TABS = [
 
 function App() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
-  const { shouldShowModal, saveCheckin, snoozeCheckin } = useMonthlyData(user?.id)
+  const { shouldShowModal, saveCheckin, snoozeCheckin, thisMonthCheckin, totalCharity, totalNotes } = useMonthlyData(user?.id)
   const [activeTab, setActiveTab]     = useState('home')
   const [goalFilter, setGoalFilter]   = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -88,6 +88,30 @@ function App() {
   {user && <ArticlesScreen />}
 </div>
 
+{/* TEMP: Test modal button — remove after testing */}
+{activeTab === 'home' && (
+  <button
+    onClick={() => setIsModalOpen(true)}
+    style={{
+      position:     'fixed',
+      bottom:       '80px',
+      right:        '16px',
+      background:   '#B8860B',
+      color:        '#fff',
+      fontFamily:   'Outfit, sans-serif',
+      fontSize:     '12px',
+      fontWeight:   600,
+      padding:      '8px 14px',
+      borderRadius: '20px',
+      border:       'none',
+      cursor:       'pointer',
+      zIndex:       100,
+      boxShadow:    '0 2px 8px rgba(0,0,0,0.15)',
+    }}
+  >
+    Test Modal
+  </button>
+)}
       {/* Bottom Nav */}
       <nav style={{
         position:   'fixed',
@@ -146,11 +170,14 @@ function App() {
 
       {/* Monthly Check-in Modal */}
       <MonthlyCheckin
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={saveCheckin}
-        onSnooze={snoozeCheckin}
-      />
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  onSave={saveCheckin}
+  onSnooze={snoozeCheckin}
+  thisMonthCheckin={thisMonthCheckin}
+  totalCharity={totalCharity}
+  totalNotes={totalNotes}
+/>
 
     </div>
   )

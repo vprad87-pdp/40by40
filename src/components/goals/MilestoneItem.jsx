@@ -20,7 +20,8 @@ export default function MilestoneItem({
   const typeMeta = GOAL_TYPE_META[goal.type] || GOAL_TYPE_META.milestone;
   const isDone   = milestone?.is_done ?? false;
   const isFuzzy  = goal.fuzzy === true;
-  const isMilestone = goal.type === "milestone" || goal.type === "quarterly";
+  const isDisplayOnly = goal.displayOnly === true;
+const isMilestone = (goal.type === "milestone" || goal.type === "quarterly") && !isDisplayOnly;
 
   const handleToggle = async () => {
     if (toggling || isFuzzy) return;
@@ -55,51 +56,54 @@ export default function MilestoneItem({
         }}
       >
         {/* Left: milestone toggle OR soft dot */}
-        <div style={{ flexShrink: 0, marginTop: 2 }}>
-          {isMilestone && !isFuzzy ? (
-            <button
-              onClick={handleToggle}
-              disabled={toggling}
-              aria-label={isDone ? "Mark incomplete" : "Mark complete"}
-              style={{
-                width: 32, height: 32,
-                borderRadius: "50%",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 0,
-              }}
-            >
-              {toggling ? (
-                <Loader2 size={22} className="animate-spin" style={{ color: accentColor }} />
-              ) : isDone ? (
-                <svg width="28" height="28" viewBox="0 0 28 28">
-                  <circle cx="14" cy="14" r="13" fill={accentColor} />
-                  <polyline points="8,14 12,18 20,10"
-                    fill="none" stroke="#FFFFFF"
-                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              ) : (
-                <svg width="28" height="28" viewBox="0 0 28 28">
-                  <circle cx="14" cy="14" r="12"
-                    fill="none" stroke="#C8D8C8" strokeWidth="2" />
-                </svg>
-              )}
-            </button>
-          ) : (
-            <div style={{
-              width: 9, height: 9,
-              borderRadius: "50%",
-              background: isFuzzy
-                ? (milestone?.progress_pct > 0 ? accentColor : dotColor)
-                : dotColor,
-              marginTop: 5,
-            }} />
-          )}
-        </div>
+       
+<div style={{ flexShrink: 0, marginTop: 2 }}>
+  {isMilestone && !isFuzzy ? (
+    <button
+      onClick={handleToggle}
+      disabled={toggling}
+      aria-label={isDone ? "Mark incomplete" : "Mark complete"}
+      style={{
+        width: 32, height: 32,
+        borderRadius: "50%",
+        border: "none",
+        background: "transparent",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 0,
+      }}
+    >
+      {toggling ? (
+        <Loader2 size={22} className="animate-spin" style={{ color: accentColor }} />
+      ) : isDone ? (
+        <svg width="28" height="28" viewBox="0 0 28 28">
+          <circle cx="14" cy="14" r="13" fill={accentColor} />
+          <polyline points="8,14 12,18 20,10"
+            fill="none" stroke="#FFFFFF"
+            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg width="28" height="28" viewBox="0 0 28 28">
+          <circle cx="14" cy="14" r="12"
+            fill="none" stroke="#C8D8C8" strokeWidth="2" />
+        </svg>
+      )}
+    </button>
+  ) : (
+    <div style={{
+      width: 9, height: 9,
+      borderRadius: "50%",
+      background: isDisplayOnly
+        ? "#D8E4D8"
+        : isFuzzy
+          ? (milestone?.progress_pct > 0 ? accentColor : dotColor)
+          : dotColor,
+      marginTop: 5,
+    }} />
+  )}
+</div>  
 
         {/* Centre: title + badge + summary/progress */}
         <div style={{ flex: 1, minWidth: 0 }}>
