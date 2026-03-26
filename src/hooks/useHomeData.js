@@ -81,6 +81,14 @@ export function useHomeData(userId) {
 
       if (msErr) throw msErr
 
+      const { data: books, error: booksErr } = await supabase
+  .from('books')
+  .select('id')
+  .eq('user_id', userId)
+
+if (booksErr) throw booksErr
+const booksCount = books?.length ?? 0
+
       const milestoneMap = {}
       milestones.forEach(m => { milestoneMap[m.goal_id] = m })
 
@@ -119,7 +127,7 @@ export function useHomeData(userId) {
       const statPool = [
         { key: 'mobile', label: 'Avg Mobile', value: `${Math.floor(avgMobile / 60)}h ${avgMobile % 60}m`, subtext: 'per day · last 30 days', good: avgMobile <= 240 },
         { key: 'social', label: 'Avg Social', value: `${Math.floor(avgSocial / 60)}h ${avgSocial % 60}m`, subtext: 'per day · last 30 days', good: avgSocial <= 60 },
-        { key: 'books', label: 'Books Read', value: 0, subtext: 'of 40 target', good: false },
+        { key: 'books', label: 'Books Read', value: booksCount, subtext: 'of 40 target', good: booksCount >= Math.round(40 * journeyFraction()) },
         { key: 'walk_week', label: 'Walk This Week', value: `${walkThisWeek} km`, subtext: 'last 7 days', good: walkThisWeek >= 10 },
         { key: 'travel', label: 'Travel Done', value: `${travelDone} / ${travelGoals.length}`, subtext: 'experiences ticked', good: travelDone > 0 },
         { key: 'milestones', label: 'Milestones Done', value: milestonesDone, subtext: `of ${ALL_GOALS.filter(g => g.type === 'milestone').length} total`, good: milestonesDone > 0 },
@@ -153,5 +161,5 @@ export function useHomeData(userId) {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [fetchAll])
 
-  return { data, loading, error }
+  return { data, loading, error, refresh: fetchAll  }
 }

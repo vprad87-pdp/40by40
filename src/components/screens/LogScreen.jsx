@@ -119,7 +119,7 @@ function WalkInput({ value, onChange }) {
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
-export default function LogScreen({ user }) {
+export default function LogScreen({ user, onOpenCheckin }) {
   const { fetchByDate, saveLog, loading, error } = useDailyLogs(user?.id);
 
   const [selectedDate, setSelectedDate] = useState(todayIST());
@@ -469,9 +469,33 @@ useEffect(() => {
       <div className="log-screen">
         {/* Header */}
         <div className="log-header">
-          <p className="log-eyebrow">Daily Entry</p>
-          <h1 className="log-title">Log Your Day</h1>
-        </div>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div>
+      <p className="log-eyebrow">Daily Entry</p>
+      <h1 className="log-title">Log Your Day</h1>
+    </div>
+    {onOpenCheckin && (
+      <button
+        onClick={onOpenCheckin}
+        style={{
+          marginTop:    '6px',
+          background:   '#fff',
+          border:       '1.5px solid #D8E4D8',
+          borderRadius: '20px',
+          padding:      '6px 12px',
+          fontSize:     '12px',
+          fontWeight:   600,
+          fontFamily:   'Outfit, sans-serif',
+          color:        '#7A8F7A',
+          cursor:       'pointer',
+          whiteSpace:   'nowrap',
+        }}
+      >
+        📋 Monthly
+      </button>
+    )}
+  </div>
+</div>
 
         {/* Date picker */}
         <div className="date-strip">

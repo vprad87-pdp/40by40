@@ -290,7 +290,7 @@ const liveNotesTotal   = totalNotes   || 0
           </>
         }
       >
-        <div style={{ padding: '0 16px 16px' }}>
+        <div style={{ padding: '0 16px 24px' }}>
 
           <p style={{
             fontFamily:    'Outfit, sans-serif',

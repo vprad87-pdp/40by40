@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from './hooks/useAuth'
 import LoginScreen from './components/screens/LoginScreen'
 import HomeScreen from './components/screens/HomeScreen'
@@ -22,9 +22,13 @@ const TABS = [
 function App() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
   const { shouldShowModal, saveCheckin, snoozeCheckin, thisMonthCheckin, totalCharity, totalNotes } = useMonthlyData(user?.id)
-  const [activeTab, setActiveTab]     = useState('home')
+  const [activeTab, setActiveTab] = useState(() => {
+  return localStorage.getItem('40by40-last-tab') || 'home'
+})
   const [goalFilter, setGoalFilter]   = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const homeRefreshRef = useRef(null)
+  
 
   useEffect(() => {
     if (shouldShowModal) setIsModalOpen(true)
@@ -35,10 +39,14 @@ function App() {
     setActiveTab('goals')
   }
 
-  function handleTabPress(tabId) {
-    if (tabId === 'goals') setGoalFilter(null)
-    setActiveTab(tabId)
+ function handleTabPress(tabId) {
+  if (tabId === 'goals') setGoalFilter(null)
+  if (tabId === 'home' && homeRefreshRef.current) {
+    homeRefreshRef.current()
   }
+  setActiveTab(tabId)
+  localStorage.setItem('40by40-last-tab', tabId)
+}
 
   if (loading) {
     return (
@@ -66,14 +74,14 @@ function App() {
       {/* All screens mounted, only one visible at a time */}
       
       <div style={{ display: activeTab === 'home' ? 'block' : 'none', minHeight: '100dvh' }}>
-  <HomeScreen user={user} onBucketTap={handleBucketTap} />
+  <HomeScreen user={user} onBucketTap={handleBucketTap} onRegisterRefresh={(fn) => { homeRefreshRef.current = fn }} />
 </div>
       
       <div style={{ display: activeTab === 'goals' ? 'block' : 'none' }}>
   {user && <GoalsScreen goalFilter={goalFilter} onNavigate={setActiveTab} user={user} />}
 </div>
 <div style={{ display: activeTab === 'log' ? 'block' : 'none' }}>
-  <LogScreen user={user} />
+  <LogScreen user={user} onOpenCheckin={() => setIsModalOpen(true)} />
 </div>
 <div style={{ display: activeTab === 'history' ? 'block' : 'none' }}>
   <HistoryScreen user={user} />
@@ -88,30 +96,7 @@ function App() {
   {user && <ArticlesScreen />}
 </div>
 
-{/* TEMP: Test modal button — remove after testing */}
-{activeTab === 'home' && (
-  <button
-    onClick={() => setIsModalOpen(true)}
-    style={{
-      position:     'fixed',
-      bottom:       '80px',
-      right:        '16px',
-      background:   '#B8860B',
-      color:        '#fff',
-      fontFamily:   'Outfit, sans-serif',
-      fontSize:     '12px',
-      fontWeight:   600,
-      padding:      '8px 14px',
-      borderRadius: '20px',
-      border:       'none',
-      cursor:       'pointer',
-      zIndex:       100,
-      boxShadow:    '0 2px 8px rgba(0,0,0,0.15)',
-    }}
-  >
-    Test Modal
-  </button>
-)}
+
       {/* Bottom Nav */}
       <nav style={{
         position:   'fixed',

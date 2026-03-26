@@ -219,9 +219,13 @@ function QuickStats({ stats }) {
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
-export default function HomeScreen({ user, onBucketTap }) {
+export default function HomeScreen({ user, onBucketTap, onRegisterRefresh }) {
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'Pradeep'
-  const { data, loading, error } = useHomeData(user?.id)
+  const { data, loading, error, refresh } = useHomeData(user?.id)
+
+  useEffect(() => {
+  if (onRegisterRefresh) onRegisterRefresh(refresh)
+}, [refresh])
 
   if (loading) {
     return (

@@ -139,7 +139,7 @@ export default function BottomSheet({
           overflowY:              "auto",
           WebkitOverflowScrolling:"touch",
           overscrollBehavior:     "contain",
-          paddingBottom:          80,
+          paddingBottom:          16,
         }}>
           {children}
         </div>
