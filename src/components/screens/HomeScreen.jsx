@@ -1,4 +1,5 @@
 // src/components/screens/HomeScreen.jsx
+import { useState, useEffect } from 'react'
 import { useHomeData } from '../../hooks/useHomeData'
 import { BIRTHDAY } from '../../constants/goals'
 
