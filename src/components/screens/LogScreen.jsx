@@ -33,8 +33,8 @@ function timeColour(totalMins, targetMins) {
 }
 
 // ─── Targets (mins) ──────────────────────────────────────────────────────────
-const TARGET_MOBILE = 120; // 2 hours
-const TARGET_SOCIAL = 30;  // 30 minutes
+const TARGET_MOBILE = 240; // 4 hours
+const TARGET_SOCIAL = 60;  // 60 minutes
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -544,8 +544,8 @@ useEffect(() => {
               <WalkInput value={walkKm} onChange={setWalkKm} />
 
               <div className="targets-hint">
-                <span className="hint-chip">📱 Target ≤ 2h</span>
-                <span className="hint-chip">🌐 Target ≤ 30m</span>
+                <span className="hint-chip">📱 Target ≤ 4h</span>
+                <span className="hint-chip">🌐 Target ≤ 60m</span>
               </div>
             </>
           )}

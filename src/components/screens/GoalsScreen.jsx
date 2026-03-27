@@ -10,38 +10,86 @@ import CategoryView from "../goals/CategoryView";
 
 export default function GoalsScreen({ goalFilter, onNavigate, user }) {
   
-    const { milestones, loading, toggleMilestone, saveFuzzyProgress, refetch } = useMilestones(user);
-    console.log('GoalsScreen user:', user?.id, 'milestones:', milestones)
+  const { milestones, loading, toggleMilestone, saveFuzzyProgress, refetch } = useMilestones(user);
   const { fetchAll } = useDailyLogs(user?.id);
   const [activeCategory, setActiveCategory] = useState(null);
   const [allLogs, setAllLogs] = useState([]);
+  const [cumulativeMap, setCumulativeMap] = useState({});
+  const [latestWeight, setLatestWeight] = useState(null);
 
-  const [latestWeight, setLatestWeight] = useState(null)
+  // Fetch latest weight
+  useEffect(() => {
+    if (!user?.id) return
+    supabase
+      .from('monthly_checkins')
+      .select('weight_kg')
+      .eq('user_id', user.id)
+      .not('weight_kg', 'is', null)
+      .order('checkin_month', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.weight_kg) setLatestWeight(data.weight_kg)
+      })
+  }, [user?.id])
 
-useEffect(() => {
-  if (!user?.id) return
-  supabase
-    .from('monthly_checkins')
-    .select('weight_kg')
-    .eq('user_id', user.id)
-    .not('weight_kg', 'is', null)
-    .order('checkin_month', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-    .then(({ data }) => {
-      if (data?.weight_kg) setLatestWeight(data.weight_kg)
-    })
-}, [user?.id])
-
-  const handleCategoryOpen = async (cat) => {
-  await refetch();  // wait for fresh data first
-  console.log('milestones after refetch:', milestones['kannada']);
-  setActiveCategory(cat);  // then open the sheet
-}
-
+  // Fetch all daily logs
   useEffect(() => {
     if (user?.id) fetchAll().then(setAllLogs);
   }, [user?.id]);
+
+  // Fetch all cumulatives — books, articles, monthly checkins
+  useEffect(() => {
+    if (!user?.id) return
+
+    async function fetchCumulatives() {
+      const { data: books } = await supabase
+        .from('books')
+        .select('id, is_tamil')
+        .eq('user_id', user.id)
+      const booksCount = books?.length ?? 0
+
+      const { data: articles } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('user_id', user.id)
+      const articlesCount = articles?.length ?? 0
+
+      const { data: projects } = await supabase
+  .from('projects')
+  .select('id')
+  .eq('user_id', user.id)
+const projectsCount = projects?.length ?? 0
+
+      const { data: checkins } = await supabase
+        .from('monthly_checkins')
+        .select('savings_inr, charity_inr, friends_met, notes_sent, zero_social_weeks, vaibhav_inr')
+        .eq('user_id', user.id)
+        .not('completed_at', 'is', null)
+
+      const sum = (field) =>
+        checkins?.reduce((acc, row) => acc + (row[field] || 0), 0) ?? 0
+
+      setCumulativeMap({
+        books:             booksCount,
+        articles:          articlesCount,
+        savings:           sum('savings_inr'),
+        charity:           sum('charity_inr'),
+        best_friends:      sum('friends_met'),
+        thankyou_notes:    sum('notes_sent'),
+        zero_social_weeks: sum('zero_social_weeks'),
+        tech_projects:     projectsCount,
+vaibhav_savings:   sum('vaibhav_inr'),
+      })
+    }
+
+    fetchCumulatives()
+  }, [user?.id])
+
+  const handleCategoryOpen = async (cat) => {
+    await refetch();
+    setActiveCategory(cat);
+  }
 
   const dailyAverages = useMemo(() => {
     if (!allLogs.length) return { mobile_mins: null, social_mins: null };
@@ -64,16 +112,16 @@ useEffect(() => {
   };
 
   const summaryMap = useMemo(() => ({
-  mobile_usage: dailyAverages.mobile_mins !== null
-    ? `Avg ${formatMins(dailyAverages.mobile_mins)} / day`
-    : "No data yet",
-  social_media: dailyAverages.social_mins !== null
-    ? `Avg ${formatMins(dailyAverages.social_mins)} / day`
-    : "No data yet",
-  weight: latestWeight !== null
-    ? `Current: ${latestWeight} kg`
-    : "Not logged yet",
-}), [dailyAverages, latestWeight]);
+    mobile_usage: dailyAverages.mobile_mins !== null
+      ? `Avg ${formatMins(dailyAverages.mobile_mins)} / day`
+      : "No data yet",
+    social_media: dailyAverages.social_mins !== null
+      ? `Avg ${formatMins(dailyAverages.social_mins)} / day`
+      : "No data yet",
+    weight: latestWeight !== null
+      ? `Current: ${latestWeight} kg`
+      : "Not logged yet",
+  }), [dailyAverages, latestWeight]);
 
   const categoryStats = useMemo(() => {
     return CATEGORIES.map((cat) => {
@@ -139,7 +187,7 @@ useEffect(() => {
         </p>
       </div>
 
-      {/* Category grid — pure CSS grid, no Tailwind */}
+      {/* Category grid */}
       <div style={{ padding: "16px 16px 100px" }}>
         <div style={{
           display: "grid",
@@ -207,7 +255,7 @@ useEffect(() => {
                   {cat.label}
                 </p>
 
-                {/* Progress bar — track always visible */}
+                {/* Progress bar */}
                 <div style={{
                   height: 5,
                   borderRadius: 5,
@@ -254,17 +302,17 @@ useEffect(() => {
       >
         {activeCategory && (
           <CategoryView
-  category={activeCategory}
-  milestones={milestones}
-  cumulativeMap={{}}
-  summaryMap={summaryMap}
-  onToggle={handleToggle}
-  onSaveFuzzy={saveFuzzyProgress}
-  onTapTracked={(goal) => {
-    setActiveCategory(null);
-    onNavigate?.(goal.id);
-  }}
-/>
+            category={activeCategory}
+            milestones={milestones}
+            cumulativeMap={cumulativeMap}
+            summaryMap={summaryMap}
+            onToggle={handleToggle}
+            onSaveFuzzy={saveFuzzyProgress}
+            onTapTracked={(goal) => {
+              setActiveCategory(null);
+              onNavigate?.(goal.id);
+            }}
+          />
         )}
       </BottomSheet>
     </div>

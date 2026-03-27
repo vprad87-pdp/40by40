@@ -110,14 +110,12 @@ const booksCount = books?.length ?? 0
           .reduce((sum, l) => sum + (l.walk_km || 0), 0) * 10
       ) / 10
 
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      const recentLogs = logs.filter(l => new Date(l.log_date) >= thirtyDaysAgo)
-      const avgMobile = recentLogs.length > 0
-        ? Math.round(recentLogs.reduce((sum, l) => sum + (l.mobile_mins || 0), 0) / recentLogs.length)
+      
+      const avgMobile = logs.length > 0
+        ? Math.round(logs.reduce((sum, l) => sum + (l.mobile_mins || 0), 0) / logs.length)
         : 0
-      const avgSocial = recentLogs.length > 0
-        ? Math.round(recentLogs.reduce((sum, l) => sum + (l.social_mins || 0), 0) / recentLogs.length)
+      const avgSocial = logs.length > 0
+        ? Math.round(logs.reduce((sum, l) => sum + (l.social_mins || 0), 0) / logs.length)
         : 0
 
       const travelGoals = CATEGORIES.find(c => c.id === 'travel')?.goals || []
@@ -125,8 +123,8 @@ const booksCount = books?.length ?? 0
       const milestonesDone = milestones.filter(m => m.is_done === true).length
 
       const statPool = [
-        { key: 'mobile', label: 'Avg Mobile', value: `${Math.floor(avgMobile / 60)}h ${avgMobile % 60}m`, subtext: 'per day · last 30 days', good: avgMobile <= 240 },
-        { key: 'social', label: 'Avg Social', value: `${Math.floor(avgSocial / 60)}h ${avgSocial % 60}m`, subtext: 'per day · last 30 days', good: avgSocial <= 60 },
+        { key: 'mobile', label: 'Avg Mobile', value: `${Math.floor(avgMobile / 60)}h ${avgMobile % 60}m`, subtext: 'per day · all time', good: avgMobile <= 240 },
+        { key: 'social', label: 'Avg Social', value: `${Math.floor(avgSocial / 60)}h ${avgSocial % 60}m`, subtext: 'per day · all time', good: avgSocial <= 60 },
         { key: 'books', label: 'Books Read', value: booksCount, subtext: 'of 40 target', good: booksCount >= Math.round(40 * journeyFraction()) },
         { key: 'walk_week', label: 'Walk This Week', value: `${walkThisWeek} km`, subtext: 'last 7 days', good: walkThisWeek >= 10 },
         { key: 'travel', label: 'Travel Done', value: `${travelDone} / ${travelGoals.length}`, subtext: 'experiences ticked', good: travelDone > 0 },

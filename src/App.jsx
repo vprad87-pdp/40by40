@@ -10,6 +10,7 @@ import { useMonthlyData } from './hooks/useMonthlyData'
 import DashboardScreen from './components/screens/DashboardScreen'
 import BooksScreen from './components/screens/BooksScreen'
 import ArticlesScreen from './components/screens/ArticlesScreen'
+import ProjectsScreen from './components/screens/ProjectsScreen'
 
 const TABS = [
   { id: 'home',      label: 'Home',      emoji: '🏠' },
@@ -94,6 +95,9 @@ function App() {
 </div>
 <div style={{ display: activeTab === 'articles' ? 'block' : 'none' }}>
   {user && <ArticlesScreen />}
+</div>
+<div style={{ display: activeTab === 'tech_projects' ? 'block' : 'none' }}>
+  {user && <ProjectsScreen />}
 </div>
 
 

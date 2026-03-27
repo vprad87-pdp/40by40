@@ -35,7 +35,7 @@ const isMilestone = (goal.type === "milestone" || goal.type === "quarterly") && 
       ? Math.min(100, Math.round((cumulativeVal / goal.targetValue) * 100))
       : null;
 
-  const hasArrow = goal.id === "books" || goal.id === "articles";
+  const hasArrow = goal.id === "books" || goal.id === "articles" || goal.id === "tech_projects";
   const dotColor = accentColor + "99";
   const rowBg = isMilestone && isDone ? "#F0FAF4" : "#FFFFFF";
   const summaryText = summaryMap[goal.id] ?? null;
