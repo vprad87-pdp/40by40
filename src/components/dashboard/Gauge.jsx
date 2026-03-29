@@ -1,16 +1,20 @@
 // src/components/dashboard/Gauge.jsx
 
-// ── Semicircle Gauge (pure CSS/SVG — reliable) ─────────────────
+// ── Semicircle Gauge (responsive SVG) ────────────────────────────
 export function SemiGauge({ value, max, label, color = '#2E7D52', unit = '' }) {
   const pct = Math.min(value / max, 1)
   const radius = 54
-  const circumference = Math.PI * radius // half circle
+  const circumference = Math.PI * radius
   const filled = pct * circumference
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div style={{ position: 'relative', width: 120, height: 68 }}>
-        <svg width="120" height="68" viewBox="0 0 120 68">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+      <div style={{ position: 'relative', width: '100%', maxWidth: 120 }}>
+        <svg
+          width="100%"
+          viewBox="0 0 120 76"
+          style={{ display: 'block' }}
+        >
           {/* Background arc */}
           <path
             d="M 6 66 A 54 54 0 0 1 114 66"
@@ -28,32 +32,40 @@ export function SemiGauge({ value, max, label, color = '#2E7D52', unit = '' }) {
             strokeLinecap="round"
             strokeDasharray={`${filled} ${circumference}`}
           />
-        </svg>
-        {/* Centre text */}
-        <div style={{
-          position: 'absolute',
-          bottom: 0,
-          width: '100%',
-          textAlign: 'center',
-        }}>
-          <span style={{
-            fontSize: 18,
-            fontWeight: 700,
-            color,
-            fontFamily: 'Lora, serif',
-            lineHeight: 1,
-          }}>
+          {/* Value text */}
+          <text
+            x="60"
+            y="58"
+            textAnchor="middle"
+            dominantBaseline="auto"
+            style={{
+              fontSize: 17,
+              fontWeight: 700,
+              fill: color,
+              fontFamily: 'Lora, serif',
+            }}
+          >
             {value}{unit}
-          </span>
-          <br />
-          <span style={{ fontSize: 10, color: '#7A8F7A', fontFamily: 'Outfit, sans-serif' }}>
+          </text>
+          {/* "of X" text */}
+          <text
+            x="60"
+            y="72"
+            textAnchor="middle"
+            dominantBaseline="auto"
+            style={{
+              fontSize: 10,
+              fill: '#7A8F7A',
+              fontFamily: 'Outfit, sans-serif',
+            }}
+          >
             of {max}{unit}
-          </span>
-        </div>
+          </text>
+        </svg>
       </div>
       <p style={{
         fontSize: 11,
-        marginTop: 6,
+        marginTop: 4,
         textAlign: 'center',
         color: '#7A8F7A',
         fontFamily: 'Outfit, sans-serif',
@@ -75,9 +87,7 @@ export function DonutGauge({ value, max, label, color = '#B8860B' }) {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ position: 'relative', width: 76, height: 76 }}>
         <svg width="76" height="76" viewBox="0 0 76 76">
-          {/* Background circle */}
           <circle cx="38" cy="38" r={radius} fill="none" stroke="#E8EEE8" strokeWidth="8" />
-          {/* Filled arc */}
           <circle
             cx="38"
             cy="38"
@@ -91,7 +101,6 @@ export function DonutGauge({ value, max, label, color = '#B8860B' }) {
             transform="rotate(-90 38 38)"
           />
         </svg>
-        {/* Centre text */}
         <div style={{
           position: 'absolute',
           inset: 0,

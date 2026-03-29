@@ -5,9 +5,11 @@ import { supabase } from '../supabase'
 export function useMonthlyData(userId) {
   const [thisMonthCheckin, setThisMonthCheckin] = useState(null)
   const [shouldShowModal, setShouldShowModal]   = useState(false)
+  const [hasCompletedThisMonth, setHasCompletedThisMonth] = useState(true) // NEW — default true to avoid flicker
   const [loading, setLoading]                   = useState(true)
   const [totalCharity, setTotalCharity]         = useState(0)
   const [totalNotes, setTotalNotes]             = useState(0)
+  const [totalVaibhav, setTotalVaibhav]         = useState(0)  // NEW
 
   function getCurrentMonthKey() {
     const now = new Date()
@@ -54,18 +56,23 @@ export function useMonthlyData(userId) {
 
     setThisMonthCheckin(data)
 
-    // Fetch all months to compute cumulative totals
+    // NEW — track whether this month's check-in is completed
+    setHasCompletedThisMonth(!!(data && data.completed_at))
+
+    // Fetch all past months to compute cumulative totals (excluding current month)
     const { data: allMonths, error: allError } = await supabase
-  .from('monthly_checkins')
-  .select('charity_inr, notes_sent')
-  .eq('user_id', userId)
-  .lt('checkin_month', monthKey)   // only months before current month
+      .from('monthly_checkins')
+      .select('charity_inr, notes_sent, vaibhav_inr')  // added vaibhav_inr
+      .eq('user_id', userId)
+      .lt('checkin_month', monthKey)
 
     if (!allError && allMonths) {
-      const charitySum = allMonths.reduce((sum, r) => sum + (r.charity_inr || 0), 0)
-      const notesSum   = allMonths.reduce((sum, r) => sum + (r.notes_sent  || 0), 0)
+      const charitySum  = allMonths.reduce((sum, r) => sum + (r.charity_inr  || 0), 0)
+      const notesSum    = allMonths.reduce((sum, r) => sum + (r.notes_sent   || 0), 0)
+      const vaibhavSum  = allMonths.reduce((sum, r) => sum + (r.vaibhav_inr  || 0), 0)  // NEW
       setTotalCharity(charitySum)
       setTotalNotes(notesSum)
+      setTotalVaibhav(vaibhavSum)  // NEW
     }
 
     // Decide whether to show modal
@@ -105,6 +112,7 @@ export function useMonthlyData(userId) {
     }
 
     setShouldShowModal(false)
+    setHasCompletedThisMonth(true)  // NEW
     await fetchMonthlyData()
     return true
   }
@@ -142,10 +150,12 @@ export function useMonthlyData(userId) {
   return {
     thisMonthCheckin,
     shouldShowModal,
+    hasCompletedThisMonth,  // NEW
     loading,
     saveCheckin,
     snoozeCheckin,
     totalCharity,
     totalNotes,
+    totalVaibhav,           // NEW
   }
 }

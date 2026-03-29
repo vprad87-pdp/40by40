@@ -83,8 +83,8 @@ const FieldRow = ({ label, sub, total, children }) => (
     </div>
     {total !== undefined && (
       <div style={{
-        marginTop:    '6px',
-        display:      'flex',
+        marginTop:      '6px',
+        display:        'flex',
         justifyContent: 'flex-end',
       }}>
         <span style={{
@@ -163,6 +163,7 @@ function seedForm(checkin) {
     played_sport:      null,
     savings_inr:       '',
     charity_inr:       '',
+    vaibhav_inr:       '',   // NEW
     friends_met:       '',
     notes_sent:        '',
     skincare_done:     null,
@@ -173,6 +174,7 @@ function seedForm(checkin) {
     played_sport:      checkin.played_sport      ?? null,
     savings_inr:       toStr(checkin.savings_inr),
     charity_inr:       toStr(checkin.charity_inr),
+    vaibhav_inr:       toStr(checkin.vaibhav_inr),  // NEW
     friends_met:       toStr(checkin.friends_met),
     notes_sent:        toStr(checkin.notes_sent),
     skincare_done:     checkin.skincare_done     ?? null,
@@ -195,6 +197,7 @@ export default function MonthlyCheckin({
   thisMonthCheckin,
   totalCharity,
   totalNotes,
+  totalVaibhav,   // NEW prop
 }) {
   const [form, setForm]     = useState(seedForm(null))
   const [saving, setSaving] = useState(false)
@@ -214,14 +217,15 @@ export default function MonthlyCheckin({
   async function handleSave() {
     setSaving(true)
     const payload = {
-      weight_kg:         form.weight_kg         !== '' ? parseFloat(form.weight_kg)         : null,
+      weight_kg:         form.weight_kg         !== '' ? parseFloat(form.weight_kg)       : null,
       played_sport:      form.played_sport,
-      savings_inr:       form.savings_inr       !== '' ? parseInt(form.savings_inr)         : null,
-      charity_inr:       form.charity_inr       !== '' ? parseInt(form.charity_inr)         : null,
-      friends_met:       form.friends_met       !== '' ? parseInt(form.friends_met)         : null,
-      notes_sent:        form.notes_sent        !== '' ? parseInt(form.notes_sent)          : null,
+      savings_inr:       form.savings_inr       !== '' ? parseInt(form.savings_inr)       : null,
+      charity_inr:       form.charity_inr       !== '' ? parseInt(form.charity_inr)       : null,
+      vaibhav_inr:       form.vaibhav_inr       !== '' ? parseInt(form.vaibhav_inr)       : null,  // NEW
+      friends_met:       form.friends_met       !== '' ? parseInt(form.friends_met)       : null,
+      notes_sent:        form.notes_sent        !== '' ? parseInt(form.notes_sent)        : null,
       skincare_done:     form.skincare_done,
-      zero_social_weeks: form.zero_social_weeks !== '' ? parseInt(form.zero_social_weeks)   : null,
+      zero_social_weeks: form.zero_social_weeks !== '' ? parseInt(form.zero_social_weeks) : null,
     }
     const ok = await onSave(payload)
     setSaving(false)
@@ -236,9 +240,9 @@ export default function MonthlyCheckin({
     onClose()
   }
 
-  // Running totals include this month's current input live
   const liveCharityTotal = totalCharity || 0
-const liveNotesTotal   = totalNotes   || 0
+  const liveNotesTotal   = totalNotes   || 0
+  const liveVaibhavTotal = totalVaibhav || 0  // NEW
 
   return (
     <>
@@ -273,16 +277,16 @@ const liveNotesTotal   = totalNotes   || 0
             <button
               onClick={handleSnooze}
               style={{
-                display:   'block',
-                width:     '100%',
-                background:'none',
-                border:    'none',
-                color:     '#7A8F7A',
-                fontFamily:'Outfit, sans-serif',
-                fontSize:  '13px',
-                cursor:    'pointer',
-                padding:   '4px',
-                textAlign: 'center',
+                display:    'block',
+                width:      '100%',
+                background: 'none',
+                border:     'none',
+                color:      '#7A8F7A',
+                fontFamily: 'Outfit, sans-serif',
+                fontSize:   '13px',
+                cursor:     'pointer',
+                padding:    '4px',
+                textAlign:  'center',
               }}
             >
               Remind me tomorrow
@@ -344,6 +348,14 @@ const liveNotesTotal   = totalNotes   || 0
             total={formatINR(liveCharityTotal)}
           >
             <NumberInput value={form.charity_inr} onChange={set('charity_inr')} placeholder="0" />
+          </FieldRow>
+          {/* NEW — Vaibhav's account */}
+          <FieldRow
+            label="Added to Vaibhav's account (₹)"
+            sub="This month only — we'll add it up"
+            total={formatINR(liveVaibhavTotal)}
+          >
+            <NumberInput value={form.vaibhav_inr} onChange={set('vaibhav_inr')} placeholder="0" />
           </FieldRow>
 
           <SectionLabel>Relationships</SectionLabel>

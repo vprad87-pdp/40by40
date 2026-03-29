@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useDailyLogs } from '../../hooks/useDailyLogs';
+import { supabase } from '../../supabase';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -27,14 +28,73 @@ function hmToMins(h, m) {
 function timeColour(totalMins, targetMins) {
   if (totalMins === null || totalMins === '') return '';
   const v = Number(totalMins);
-  if (v <= targetMins)                    return 'good';
-  if (v <= targetMins * 1.15)             return 'warn';
+  if (v <= targetMins)        return 'good';
+  if (v <= targetMins * 1.15) return 'warn';
   return 'bad';
+}
+
+/** Days between two YYYY-MM-DD strings */
+function daysBetween(dateA, dateB) {
+  const a = new Date(dateA);
+  const b = new Date(dateB);
+  return Math.round(Math.abs((b - a) / (1000 * 60 * 60 * 24)));
 }
 
 // ─── Targets (mins) ──────────────────────────────────────────────────────────
 const TARGET_MOBILE = 240; // 4 hours
 const TARGET_SOCIAL = 60;  // 60 minutes
+const WALK_INACTIVITY_DAYS = 7;
+
+// ─── Walk Inactivity Banner ───────────────────────────────────────────────────
+
+function WalkInactivityBanner({ daysSinceWalk, onDismiss }) {
+  if (daysSinceWalk === null) return null;
+
+  const isNeverLogged = daysSinceWalk === -1;
+  const message = isNeverLogged
+    ? "You haven't logged a walk yet — get those steps in! 🚶"
+    : `No walk logged in ${daysSinceWalk} days — time to move! 🚶`;
+
+  return (
+    <div style={{
+      margin:       '12px 16px 0',
+      background:   '#fdf6e3',
+      border:       '1.5px solid #B8860B',
+      borderRadius: '12px',
+      padding:      '12px 14px',
+      display:      'flex',
+      alignItems:   'center',
+      gap:          '10px',
+    }}>
+      <span style={{ fontSize: '18px', flexShrink: 0 }}>⚠️</span>
+      <span style={{
+        flex:       1,
+        fontFamily: 'Outfit, sans-serif',
+        fontSize:   '13px',
+        color:      '#7a5c00',
+        lineHeight: 1.4,
+      }}>
+        {message}
+      </span>
+      <button
+        onClick={onDismiss}
+        style={{
+          background:  'none',
+          border:      'none',
+          cursor:      'pointer',
+          fontSize:    '16px',
+          color:       '#B8860B',
+          padding:     '0 2px',
+          flexShrink:  0,
+          lineHeight:  1,
+        }}
+        aria-label="Dismiss"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -127,12 +187,42 @@ export default function LogScreen({ user, onOpenCheckin }) {
   const [fetchDone,    setFetchDone]    = useState(false);
   const [saved,        setSaved]        = useState(false);
 
+  // Walk inactivity state
+  const [daysSinceWalk,      setDaysSinceWalk]      = useState(null);
+  const [walkBannerDismissed, setWalkBannerDismissed] = useState(false);
+
   // Form state
   const [mobileH, setMobileH] = useState('');
   const [mobileM, setMobileM] = useState('');
   const [socialH, setSocialH] = useState('');
   const [socialM, setSocialM] = useState('');
   const [walkKm,  setWalkKm]  = useState('');
+
+  // Check walk inactivity on mount
+  useEffect(() => {
+    if (!user?.id) return;
+    checkWalkInactivity();
+  }, [user?.id]);
+
+  async function checkWalkInactivity() {
+    const { data } = await supabase
+      .from('daily_logs')
+      .select('log_date, walk_km')
+      .eq('user_id', user.id)
+      .not('walk_km', 'is', null)
+      .gt('walk_km', 0)
+      .order('log_date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!data) {
+      // Never logged a walk
+      setDaysSinceWalk(-1);
+    } else {
+      const days = daysBetween(data.log_date, todayIST());
+      setDaysSinceWalk(days >= WALK_INACTIVITY_DAYS ? days : null);
+    }
+  }
 
   // Load existing data when date changes
   const loadDate = useCallback(async (date) => {
@@ -155,13 +245,13 @@ export default function LogScreen({ user, onOpenCheckin }) {
     setFetchDone(true);
   }, [fetchByDate]);
 
-useEffect(() => {
-  if (!user?.id) {
-    setFetchDone(true)
-    return
-  }
-  loadDate(selectedDate);
-}, [selectedDate, loadDate, user?.id]);
+  useEffect(() => {
+    if (!user?.id) {
+      setFetchDone(true);
+      return;
+    }
+    loadDate(selectedDate);
+  }, [selectedDate, loadDate, user?.id]);
 
   const mobileMins = (mobileH !== '' || mobileM !== '') ? hmToMins(mobileH, mobileM) : null;
   const socialMins = (socialH !== '' || socialM !== '') ? hmToMins(socialH, socialM) : null;
@@ -179,12 +269,19 @@ useEffect(() => {
       setIsExisting(true);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
+      // If they just logged a walk, dismiss the banner
+      if (walkKm !== '' && parseFloat(walkKm) > 0) {
+        setDaysSinceWalk(null);
+        setWalkBannerDismissed(false);
+      }
     }
   };
 
   const isEmpty = mobileH === '' && mobileM === '' &&
                   socialH === '' && socialM === '' &&
                   walkKm === '';
+
+  const showWalkBanner = !walkBannerDismissed && daysSinceWalk !== null;
 
   return (
     <>
@@ -469,33 +566,41 @@ useEffect(() => {
       <div className="log-screen">
         {/* Header */}
         <div className="log-header">
-  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-    <div>
-      <p className="log-eyebrow">Daily Entry</p>
-      <h1 className="log-title">Log Your Day</h1>
-    </div>
-    {onOpenCheckin && (
-      <button
-        onClick={onOpenCheckin}
-        style={{
-          marginTop:    '6px',
-          background:   '#fff',
-          border:       '1.5px solid #D8E4D8',
-          borderRadius: '20px',
-          padding:      '6px 12px',
-          fontSize:     '12px',
-          fontWeight:   600,
-          fontFamily:   'Outfit, sans-serif',
-          color:        '#7A8F7A',
-          cursor:       'pointer',
-          whiteSpace:   'nowrap',
-        }}
-      >
-        📋 Monthly
-      </button>
-    )}
-  </div>
-</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <p className="log-eyebrow">Daily Entry</p>
+              <h1 className="log-title">Log Your Day</h1>
+            </div>
+            {onOpenCheckin && (
+              <button
+                onClick={onOpenCheckin}
+                style={{
+                  marginTop:    '6px',
+                  background:   '#fff',
+                  border:       '1.5px solid #D8E4D8',
+                  borderRadius: '20px',
+                  padding:      '6px 12px',
+                  fontSize:     '12px',
+                  fontWeight:   600,
+                  fontFamily:   'Outfit, sans-serif',
+                  color:        '#7A8F7A',
+                  cursor:       'pointer',
+                  whiteSpace:   'nowrap',
+                }}
+              >
+                📋 Monthly
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Walk inactivity banner */}
+        {showWalkBanner && (
+          <WalkInactivityBanner
+            daysSinceWalk={daysSinceWalk}
+            onDismiss={() => setWalkBannerDismissed(true)}
+          />
+        )}
 
         {/* Date picker */}
         <div className="date-strip">
