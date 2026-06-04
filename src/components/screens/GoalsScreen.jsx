@@ -129,19 +129,21 @@ export default function GoalsScreen({
     const { data: articles } = await supabase.from('articles').select('id').eq('user_id', user.id)
     const { data: projects } = await supabase.from('projects').select('id').eq('user_id', user.id)
 
-    const { data: checkins } = await supabase
+   const { data: checkins } = await supabase
       .from('monthly_checkins')
-      .select('savings_inr, charity_inr, friends_met, notes_sent, zero_social_weeks, vaibhav_inr')
+      .select('savings_inr, charity_inr, friends_met, notes_sent, zero_social_weeks, vaibhav_inr, checkin_month')
       .eq('user_id', user.id)
       .not('completed_at', 'is', null)
+      .order('checkin_month', { ascending: false })
 
-    const sum = (field) => checkins?.reduce((acc, row) => acc + (row[field] || 0), 0) ?? 0
+    const sum    = (field) => checkins?.reduce((acc, row) => acc + (row[field] || 0), 0) ?? 0
+    const latest = checkins?.[0] ?? {}   // most recent completed month
 
     setCumulativeMap({
       walking:           Math.round(walkTotal * 10) / 10,
       books:             books?.length ?? 0,
       articles:          articles?.length ?? 0,
-      savings:           sum('savings_inr'),
+      savings:           latest.savings_inr ?? 0,   // snapshot — NOT summed
       charity:           sum('charity_inr'),
       best_friends:      sum('friends_met'),
       thankyou_notes:    sum('notes_sent'),
