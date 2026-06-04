@@ -1,3 +1,4 @@
+// src/hooks/useDashboardData.js
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 
@@ -41,14 +42,20 @@ export function useDashboardData(user) {  // ← accept user as param
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
 
+    // ── Monthly check-ins ───────────────────────────────────────────────
+    // Only COMPLETED check-ins count — matches Home and Goals screens.
+    // savings_inr is a SNAPSHOT (current balance) → use the latest completed month.
+    // charity / friends / notes / zero-social are CUMULATIVE → sum across ALL completed months.
     const { data: checkins } = await supabase
       .from('monthly_checkins')
-      .select('savings_inr, charity_inr, friends_met, notes_sent, zero_social_weeks, checkin_month')
+      .select('savings_inr, charity_inr, friends_met, notes_sent, zero_social_weeks, checkin_month, completed_at')
       .eq('user_id', user.id)
+      .not('completed_at', 'is', null)
       .order('checkin_month', { ascending: false })
-      .limit(1)
 
-    const latest = checkins?.[0] || {}
+    const completed = checkins || []
+    const latest    = completed[0] || {}                 // most recent completed month (savings snapshot)
+    const sum       = (field) => completed.reduce((acc, r) => acc + (r[field] || 0), 0)
 
     setData({
       walkTotal: Math.round(walkTotal * 10) / 10,
@@ -59,15 +66,15 @@ export function useDashboardData(user) {  // ← accept user as param
       tamilBooksTarget: 4,
       articlesCount: articlesCount || 0,
       articlesTarget: 14,
-      savingsLacs: latest.savings_inr ? (latest.savings_inr / 100000) : 0,
+      savingsLacs: latest.savings_inr ? (latest.savings_inr / 100000) : 0,  // snapshot
       savingsTarget: 40,
-      charityInr: latest.charity_inr || 0,
+      charityInr: sum('charity_inr'),          // cumulative
       charityTarget: 50000,
-      friendsMet: latest.friends_met || 0,
+      friendsMet: sum('friends_met'),          // cumulative
       friendsTarget: 4,
-      notesSent: latest.notes_sent || 0,
+      notesSent: sum('notes_sent'),            // cumulative
       notesTarget: 14,
-      zeroSocialWeeks: latest.zero_social_weeks || 0,
+      zeroSocialWeeks: sum('zero_social_weeks'), // cumulative
       zeroSocialTarget: 4,
       recentLogs: recentLogs.reverse(),
     })
