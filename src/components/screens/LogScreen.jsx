@@ -9,6 +9,36 @@ function todayIST() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 }
 
+/** Yesterday in IST as YYYY-MM-DD — calendar math on the IST date, no timezone drift */
+function yesterdayIST() {
+  const [y, m, d] = todayIST().split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() - 1);
+  const yy = dt.getUTCFullYear();
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(dt.getUTCDate()).padStart(2, '0');
+  return `${yy}-${mm}-${dd}`;
+}
+
+/** localStorage key for remembering the last-viewed log date */
+const LOG_DATE_KEY = '40by40-log-date';
+
+/**
+ * Which date the Log screen opens on:
+ *  - saved earlier TODAY (survived a reload/reopen) → restore it
+ *  - otherwise (fresh day / first use)              → yesterday
+ */
+function getInitialLogDate() {
+  try {
+    const raw = localStorage.getItem(LOG_DATE_KEY);
+    if (raw) {
+      const { date, savedOn } = JSON.parse(raw);
+      if (date && savedOn === todayIST()) return date;
+    }
+  } catch { /* ignore corrupt storage */ }
+  return yesterdayIST();
+}
+
 /** Convert total minutes → { h, m } */
 function minsToHM(mins) {
   if (mins === null || mins === undefined || mins === '') return { h: '', m: '' };
@@ -41,8 +71,8 @@ function daysBetween(dateA, dateB) {
 }
 
 // ─── Targets (mins) ──────────────────────────────────────────────────────────
-const TARGET_MOBILE = 240; // 4 hours
-const TARGET_SOCIAL = 60;  // 60 minutes
+const TARGET_MOBILE = 270; // 4.5 hours
+const TARGET_SOCIAL = 90;  // 1.5 hours
 const WALK_INACTIVITY_DAYS = 7;
 
 // ─── Walk Inactivity Banner ───────────────────────────────────────────────────
@@ -182,7 +212,7 @@ function WalkInput({ value, onChange }) {
 export default function LogScreen({ user, onOpenCheckin }) {
   const { fetchByDate, saveLog, loading, error } = useDailyLogs(user?.id);
 
-  const [selectedDate, setSelectedDate] = useState(todayIST());
+  const [selectedDate, setSelectedDate] = useState(getInitialLogDate);
   const [isExisting,   setIsExisting]   = useState(false);
   const [fetchDone,    setFetchDone]    = useState(false);
   const [saved,        setSaved]        = useState(false);
@@ -252,6 +282,13 @@ export default function LogScreen({ user, onOpenCheckin }) {
     }
     loadDate(selectedDate);
   }, [selectedDate, loadDate, user?.id]);
+
+  // Remember the selected date so it survives tab switches, reopens, and reloads
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOG_DATE_KEY, JSON.stringify({ date: selectedDate, savedOn: todayIST() }));
+    } catch { /* ignore */ }
+  }, [selectedDate]);
 
   const mobileMins = (mobileH !== '' || mobileM !== '') ? hmToMins(mobileH, mobileM) : null;
   const socialMins = (socialH !== '' || socialM !== '') ? hmToMins(socialH, socialM) : null;
@@ -649,8 +686,8 @@ export default function LogScreen({ user, onOpenCheckin }) {
               <WalkInput value={walkKm} onChange={setWalkKm} />
 
               <div className="targets-hint">
-                <span className="hint-chip">📱 Target ≤ 4h</span>
-                <span className="hint-chip">🌐 Target ≤ 60m</span>
+                <span className="hint-chip">📱 Target ≤ 4.5h</span>
+                <span className="hint-chip">🌐 Target ≤ 1.5h</span>
               </div>
             </>
           )}

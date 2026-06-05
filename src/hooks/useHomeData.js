@@ -231,8 +231,8 @@ export function useHomeData(userId) {
       const jf             = journeyFraction()
 
       const statPool = [
-        { key: 'mobile',     label: 'Avg Mobile',      value: `${Math.floor(avgMobile/60)}h ${avgMobile%60}m`, subtext: 'per day · all time',           good: avgMobile <= 240 },
-        { key: 'social',     label: 'Avg Social',       value: `${Math.floor(avgSocial/60)}h ${avgSocial%60}m`, subtext: 'per day · all time',           good: avgSocial <= 60 },
+        { key: 'mobile',     label: 'Avg Mobile',      value: `${Math.floor(avgMobile/60)}h ${avgMobile%60}m`, subtext: 'per day · all time',           good: avgMobile <= 270 },
+        { key: 'social',     label: 'Avg Social',       value: `${Math.floor(avgSocial/60)}h ${avgSocial%60}m`, subtext: 'per day · all time',           good: avgSocial <= 90 },
         { key: 'books',      label: 'Books Read',       value: booksCount,                                       subtext: 'of 40 target',                  good: booksCount >= Math.round(40 * jf) },
         { key: 'walk_week',  label: 'Walk This Week',   value: `${walkThisWeek} km`,                             subtext: 'last 7 days',                   good: walkThisWeek >= 10 },
         { key: 'travel',     label: 'Travel Done',      value: `${travelDone} / ${travelGoals.length}`,          subtext: 'experiences ticked',            good: travelDone > 0 },
